@@ -1,0 +1,7 @@
+{
+  "_hinweis": "Vorlage. Als <MandantNr>.json speichern (z. B. 20417.json). Nur abweichende Einträge angeben; alles andere kommt aus lohnarten.standard.json.",
+  "lohnarten": {
+    "zuschlag_nacht": { "text": "Nachtzuschlag 30 % (Tarif)", "wert": "stunden", "lodas": "1405", "sbs": "0505" }
+  },
+  "sbs": { "firmennummer": "117" }
+}

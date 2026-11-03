@@ -1,0 +1,16 @@
+# Abhängigkeiten und Build
+node_modules/
+.build/
+**/web/app.js
+
+# Mandantendaten – niemals einchecken
+eingang/
+**/eingang/
+**/konfig/mandanten/*.json
+!**/konfig/mandanten/beispiel.json
+
+# Python / System
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

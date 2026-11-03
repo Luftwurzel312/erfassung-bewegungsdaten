@@ -1,0 +1,2543 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Monatsmeldung Lohn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=JetBrains+Mono:wght@400&display=swap">
+  <style>
+
+/* Layout: Kopfband mit Fortschritt, darunter Liste (links) + Arbeitsfläche (rechts);
+   geführte Fragen als Dialog. Ruhige Ordnerfarben, ein klares Cyan als Handlungsfarbe. */
+:root {
+  --bg: #f3f6f8;
+  --flaeche: #ffffff;
+  --flaeche-2: #e9eff3;
+  --linie: #d3dde4;
+  --text: #13232d;
+  --text-2: #4d606c;
+  --akzent: #0a7f99;
+  --akzent-stark: #066377;
+  --akzent-zart: #dcf1f6;
+  --auf-akzent: #ffffff;
+  --ok: #1d7a46;       --ok-zart: #def3e6;
+  --warn: #9a5b00;     --warn-zart: #fdf0d7;
+  --fehler: #b42318;   --fehler-zart: #fde4e1;
+  --info: #335d8a;     --info-zart: #e3edf8;
+  --urlaub: #f2b84b;
+  --krank: #e0675a;
+  --kindkrank: #c78bd8;
+  --unbezahlt: #8f9ca6;
+  --feiertag: #0a7f99;
+  --schatten: 0 1px 2px rgb(19 35 45 / .06), 0 8px 24px rgb(19 35 45 / .08);
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-text: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f171c; --flaeche: #16222a; --flaeche-2: #1d2b34; --linie: #2b3d48;
+    --text: #e6eef2; --text-2: #9fb1bc; --akzent: #3cc0db; --akzent-stark: #6fd3e7;
+    --akzent-zart: #12343e; --auf-akzent: #06212a;
+    --ok: #5fd08e; --ok-zart: #143524; --warn: #f2b84b; --warn-zart: #3a2c10;
+    --fehler: #ff8a7e; --fehler-zart: #42201c; --info: #8bb6e6; --info-zart: #1a2a3d;
+    --urlaub: #d9a23c; --krank: #d1655a; --kindkrank: #a974ba; --unbezahlt: #6d7b85; --feiertag: #3cc0db;
+    --schatten: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f171c; --flaeche: #16222a; --flaeche-2: #1d2b34; --linie: #2b3d48;
+  --text: #e6eef2; --text-2: #9fb1bc; --akzent: #3cc0db; --akzent-stark: #6fd3e7;
+  --akzent-zart: #12343e; --auf-akzent: #06212a;
+  --ok: #5fd08e; --ok-zart: #143524; --warn: #f2b84b; --warn-zart: #3a2c10;
+  --fehler: #ff8a7e; --fehler-zart: #42201c; --info: #8bb6e6; --info-zart: #1a2a3d;
+  --urlaub: #d9a23c; --krank: #d1655a; --kindkrank: #a974ba; --unbezahlt: #6d7b85; --feiertag: #3cc0db;
+  --schatten: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.5 var(--f-text);
+}
+body.modal-offen { overflow: hidden; }
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.15; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.1rem); font-weight: 700; }
+h2 { font-size: 1.2rem; font-weight: 650; }
+h3 { font-size: 1rem; font-weight: 650; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--akzent); outline-offset: 2px; border-radius: 6px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.leise { color: var(--text-2); font-size: .92rem; }
+.eyebrow { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); font-weight: 700; }
+code { font-family: var(--f-mono); font-size: .88em; }
+
+/* Kopfband */
+.kopfbar { background: var(--flaeche); border-bottom: 1px solid var(--linie); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--flaeche); }
+.kopf-innen {
+  max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.marke { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.marke-zeichen { width: 36px; height: 36px; border-radius: 9px; background: var(--akzent); display: grid; place-items: center; flex: none; }
+.marke-zeichen .ico { stroke: var(--auf-akzent); width: 22px; height: 22px; }
+.marke-name { font-family: var(--f-display); font-weight: 700; font-size: 1.1rem; line-height: 1.1; }
+.marke-sub { font-size: .82rem; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40ch; }
+.stepper { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.st { display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 6px 8px; border-radius: 8px; cursor: pointer; color: var(--text-2); }
+.st:disabled { cursor: not-allowed; opacity: .55; }
+.st:not(:disabled):hover { background: var(--flaeche-2); }
+.st-nr { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: .85rem; border: 2px solid var(--linie); background: var(--flaeche); }
+.st-aktiv { color: var(--text); font-weight: 700; }
+.st-aktiv .st-nr { background: var(--akzent); border-color: var(--akzent); color: var(--auf-akzent); }
+.st-fertig .st-nr { border-color: var(--akzent); color: var(--akzent); }
+.st-linie { width: 24px; height: 2px; background: var(--linie); }
+.monat-pille { font-family: var(--f-display); font-weight: 650; background: var(--akzent-zart); color: var(--akzent-stark); padding: 6px 14px; border-radius: 999px; white-space: nowrap; }
+
+/* Seiten */
+.seite {
+  max-width: 1400px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.seite-schmal { max-width: 820px; }
+.seite-mittel { max-width: 1100px; }
+.karte { background: var(--flaeche); border: 1px solid var(--linie); border-radius: 14px; padding: clamp(20px, 3vw, 36px); display: grid; gap: 20px; }
+.lead { font-size: 1.08rem; color: var(--text-2); max-width: 62ch; }
+.aktionen { display: flex; gap: 12px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+.beispiel-hinweis { margin-top: 16px; font-size: .9rem; color: var(--text-2); text-align: center; }
+.feiertage { background: var(--flaeche-2); border-radius: 8px; padding: 10px 14px; font-size: .92rem; color: var(--text-2); }
+
+/* Formulare */
+.formgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 20px; }
+.feld { display: grid; gap: 6px; min-width: 0; border: 0; padding: 0; margin: 0; align-content: start; }
+.feld > span, .feld > legend { font-weight: 700; font-size: .92rem; padding: 0; margin-bottom: 6px; }
+.feld small { color: var(--text-2); font-size: .82rem; }
+.feld-breit { grid-column: 1 / -1; }
+input, select, textarea {
+  font: inherit; color: var(--text); background: var(--flaeche); border: 1.5px solid var(--linie);
+  border-radius: 8px; padding: 10px 12px; width: 100%; min-width: 0;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--akzent); outline: 3px solid var(--akzent-zart); outline-offset: 0; }
+textarea { resize: vertical; }
+.zahl-eingabe { display: flex; align-items: stretch; }
+.zahl-eingabe input { border-top-right-radius: 0; border-bottom-right-radius: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.einheit { display: grid; place-items: center; padding: 0 14px; background: var(--flaeche-2); border: 1.5px solid var(--linie); border-left: 0; border-radius: 0 8px 8px 0; color: var(--text-2); font-weight: 700; }
+.check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--akzent); flex: none; }
+
+/* Knöpfe */
+.btn {
+  border: 1.5px solid var(--linie); background: var(--flaeche); border-radius: 8px; padding: 10px 18px;
+  font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s; text-align: center;
+}
+.btn:hover:not(:disabled) { border-color: var(--akzent); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-haupt { background: var(--akzent); border-color: var(--akzent); color: var(--auf-akzent); }
+.btn-haupt:hover:not(:disabled) { background: var(--akzent-stark); border-color: var(--akzent-stark); }
+.btn-zart { background: var(--akzent-zart); border-color: transparent; color: var(--akzent-stark); }
+.btn-klein { padding: 5px 10px; font-size: .86rem; }
+.btn-leise { border-color: transparent; background: none; color: var(--text-2); }
+.btn-gefahr { background: var(--fehler); border-color: var(--fehler); color: var(--flaeche); }
+.voll { width: 100%; }
+.link { border: 0; background: none; padding: 0; color: var(--akzent-stark); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
+.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Status */
+.chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; white-space: nowrap; }
+.chip-offen { background: var(--flaeche-2); color: var(--text-2); }
+.chip-fehler { background: var(--fehler-zart); color: var(--fehler); }
+.chip-warnung { background: var(--warn-zart); color: var(--warn); }
+.chip-ok { background: var(--ok-zart); color: var(--ok); }
+.punkt { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--linie); }
+.punkt-fehler { background: var(--fehler); }
+.punkt-warnung { background: var(--warn); }
+.punkt-ok { background: var(--ok); }
+.punkt-offen { background: transparent; border: 2px solid var(--text-2); }
+
+/* Personenansicht */
+.personen { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
+.liste { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); background: var(--flaeche); border: 1px solid var(--linie); border-radius: 14px; padding: 18px; display: grid; gap: 12px; }
+.liste-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.zaehler { font-size: .85rem; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.fortschritt { height: 6px; border-radius: 3px; background: var(--flaeche-2); overflow: hidden; }
+.fortschritt span { display: block; height: 100%; background: var(--ok); transition: width .3s; }
+.liste ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.person { width: 100%; display: flex; align-items: center; gap: 12px; border: 0; background: none; border-radius: 8px; padding: 10px; cursor: pointer; text-align: left; }
+.person:hover { background: var(--flaeche-2); }
+.person-aktiv { background: var(--akzent-zart); }
+.person-aktiv:hover { background: var(--akzent-zart); }
+.person-text { display: grid; min-width: 0; }
+.person-name { font-weight: 700; }
+.person-sub { font-size: .82rem; color: var(--text-2); }
+
+.detail { background: var(--flaeche); border: 1px solid var(--linie); border-radius: 14px; padding: clamp(18px, 2.5vw, 32px); display: grid; gap: 28px; min-width: 0; scroll-margin-top: 90px; }
+.detail-kopf { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.detail-kopf .sub { color: var(--text-2); margin-top: 4px; }
+.detail-kopf-r { display: flex; gap: 10px; align-items: center; }
+
+/* Monatsleiste */
+.leiste-wrap { display: grid; gap: 8px; min-width: 0; }
+.leiste { display: grid; grid-template-columns: repeat(var(--tage), minmax(26px, 1fr)); gap: 3px; overflow-x: auto; padding-bottom: 4px; }
+.tag { display: grid; justify-items: center; gap: 1px; padding: 4px 0 5px; border-radius: 6px; background: var(--flaeche-2); font-variant-numeric: tabular-nums; min-width: 26px; }
+.tag-wt { font-size: .66rem; color: var(--text-2); }
+.tag-nr { font-size: .82rem; font-weight: 700; }
+.tag-k { font-size: .66rem; font-weight: 700; height: 1em; line-height: 1; }
+.tag-frei { background: repeating-linear-gradient(135deg, var(--flaeche-2) 0 4px, var(--flaeche) 4px 8px); color: var(--text-2); }
+.tag-feiertag { box-shadow: inset 0 -3px 0 var(--feiertag); }
+.tag-urlaub { background: var(--urlaub); color: #2b1d00; }
+.tag-krank { background: var(--krank); color: #2a0703; }
+.tag-kindkrank { background: var(--kindkrank); color: #240a2b; }
+.tag-unbezahlt, .tag-mutterschutz { background: var(--unbezahlt); color: #101418; }
+.tag-urlaub .tag-wt, .tag-krank .tag-wt, .tag-kindkrank .tag-wt, .tag-unbezahlt .tag-wt, .tag-mutterschutz .tag-wt { color: inherit; opacity: .75; }
+.tag-konflikt { outline: 2px solid var(--fehler); outline-offset: -2px; }
+.tag-aus { opacity: .35; }
+.legende, .kal-legende { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .8rem; color: var(--text-2); }
+.legende span, .kal-legende span { display: inline-flex; align-items: center; gap: 6px; }
+.lg { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.lg-urlaub { background: var(--urlaub); } .lg-krank { background: var(--krank); } .lg-kindkrank { background: var(--kindkrank); }
+.lg-unbezahlt { background: var(--unbezahlt); } .lg-feiertag { background: var(--feiertag); }
+.lg-frei { background: repeating-linear-gradient(135deg, var(--linie) 0 2px, var(--flaeche) 2px 4px); border: 1px solid var(--linie); }
+.lg-belegt { background: var(--flaeche-2); border: 2px dashed var(--text-2); }
+
+/* Menü */
+.frage-block { display: grid; gap: 10px; }
+.frage-block > h2 { font-size: 1.45rem; }
+.gruppe { display: grid; gap: 10px; margin-top: 10px; }
+.gruppe h3 { font-family: var(--f-text); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+.kacheln { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.kachel {
+  position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto 1fr; column-gap: 12px; row-gap: 2px;
+  text-align: left; border: 1.5px solid var(--linie); background: var(--flaeche); border-radius: var(--r); padding: 14px; cursor: pointer;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.kachel:hover { border-color: var(--akzent); box-shadow: var(--schatten); transform: translateY(-1px); }
+.kachel-ico { grid-row: 1 / 3; width: 36px; height: 36px; padding: 7px; border-radius: 9px; background: var(--akzent-zart); stroke: var(--akzent-stark); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.kachel-titel { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.kachel-text { font-size: .86rem; color: var(--text-2); line-height: 1.35; }
+.kachel-zahl { background: var(--akzent); color: var(--auf-akzent); border-radius: 999px; min-width: 20px; height: 20px; font-size: .75rem; display: inline-grid; place-items: center; padding: 0 6px; }
+.kachel-pflicht { border-color: var(--akzent); background: var(--akzent-zart); }
+.kachel-marke { grid-column: 2; font-size: .75rem; font-weight: 700; color: var(--akzent-stark); margin-top: 4px; }
+
+/* Einträge */
+.eintraege { display: grid; gap: 12px; }
+.eintrag-liste { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--linie); border-radius: var(--r); }
+.eintrag { display: flex; align-items: center; gap: 14px; padding: 12px 14px; flex-wrap: wrap; }
+.eintrag + .eintrag { border-top: 1px solid var(--linie); }
+.eintrag-ico { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; background: var(--flaeche-2); flex: none; }
+.eintrag-ico .ico { width: 20px; height: 20px; }
+.eintrag-urlaub { background: var(--urlaub); color: #2b1d00; }
+.eintrag-krank { background: var(--krank); color: #2a0703; }
+.eintrag-kindkrank { background: var(--kindkrank); color: #240a2b; }
+.eintrag-unbezahlt, .eintrag-mutterschutz { background: var(--unbezahlt); color: #101418; }
+.eintrag-text { display: grid; flex: 1 1 220px; min-width: 0; }
+.eintrag-text span { color: var(--text-2); font-size: .92rem; font-variant-numeric: tabular-nums; }
+.eintrag-akt { display: flex; gap: 6px; }
+.leer-text { color: var(--text-2); padding: 14px; border: 1.5px dashed var(--linie); border-radius: var(--r); }
+.auto { font-size: .9rem; color: var(--text-2); background: var(--flaeche-2); padding: 10px 14px; border-radius: 8px; }
+.pruef-block { display: grid; gap: 10px; }
+.detail-fuss { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--linie); padding-top: 20px; }
+
+/* Befunde */
+.befunde { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.bf { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border-radius: 8px; font-size: .92rem; line-height: 1.4; }
+.bf-marke { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 7px; border-radius: 4px; flex: none; margin-top: 1px; }
+.bf-fehler { background: var(--fehler-zart); } .bf-fehler .bf-marke { background: var(--fehler); color: var(--flaeche); }
+.bf-warnung { background: var(--warn-zart); } .bf-warnung .bf-marke { background: var(--warn); color: var(--flaeche); }
+.bf-info { background: var(--info-zart); } .bf-info .bf-marke { background: var(--info); color: var(--flaeche); }
+.alles-ok { background: var(--ok-zart); color: var(--ok); font-weight: 700; padding: 10px 14px; border-radius: 8px; }
+
+/* Dialog */
+.overlay { position: fixed; inset: 0; z-index: 50; background: rgb(8 20 26 / .55); display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.dialog { background: var(--flaeche); border-radius: 16px; width: min(620px, 100%); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgb(0 0 0 / .3); min-height: 0; }
+@media (prefers-reduced-motion: reduce) { .kachel, .fortschritt span { transition: none; } }
+.dlg-kopf { display: flex; gap: 14px; align-items: center; padding: 20px 22px 12px; }
+.dlg-kopf h2 { font-size: 1.35rem; }
+.dlg-ico { width: 42px; height: 42px; border-radius: 10px; background: var(--akzent-zart); color: var(--akzent-stark); display: grid; place-items: center; flex: none; }
+.x { margin-left: auto; border: 0; background: none; padding: 8px; border-radius: 8px; cursor: pointer; color: var(--text-2); align-self: flex-start; }
+.x:hover { background: var(--flaeche-2); }
+.schrittbalken { display: flex; gap: 4px; padding: 0 22px; }
+.schrittbalken span { flex: 1; height: 5px; border-radius: 3px; background: var(--flaeche-2); }
+.schrittbalken .sb-fertig { background: var(--akzent); }
+.schrittbalken .sb-aktiv { background: var(--akzent); opacity: .5; }
+.schritt-text { padding: 8px 22px 0; font-size: .8rem; color: var(--text-2); }
+.dlg-inhalt { padding: 14px 22px 20px; overflow-y: auto; min-height: 0; flex: 1 1 auto; display: grid; gap: 14px; }
+.dlg-fuss { display: flex; justify-content: space-between; gap: 12px; padding: 14px 22px; border-top: 1px solid var(--linie); }
+.frage { font-size: 1.3rem; }
+.optional { font-family: var(--f-text); font-size: .75rem; font-weight: 700; color: var(--text-2); background: var(--flaeche-2); padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+.hilfe { color: var(--text-2); max-width: 62ch; }
+input.gross, textarea.gross { font-size: 1.25rem; padding: 12px 14px; }
+.optionen { display: grid; gap: 8px; }
+.option { display: flex; gap: 12px; align-items: flex-start; text-align: left; border: 1.5px solid var(--linie); background: var(--flaeche); border-radius: var(--r); padding: 14px; cursor: pointer; }
+.option:hover { border-color: var(--akzent); }
+.option-an { border-color: var(--akzent); background: var(--akzent-zart); }
+.radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-2); flex: none; margin-top: 2px; display: grid; place-items: center; }
+.option-an .radio { border-color: var(--akzent); }
+.option-an .radio::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--akzent); }
+.option-text { font-weight: 700; display: block; }
+.option-hilfe { font-size: .86rem; color: var(--text-2); display: block; }
+.rechnung { display: flex; flex-wrap: wrap; gap: 6px 20px; padding: 12px 14px; background: var(--akzent-zart); border-radius: 8px; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+#wz-live { display: grid; gap: 6px; }
+
+/* Kalender */
+.kalender { display: grid; gap: 10px; }
+.kal-kopf { display: flex; justify-content: space-between; align-items: center; }
+.kal-kopf strong { font-family: var(--f-display); font-size: 1.05rem; }
+.kal-raster { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.kal-wt { text-align: center; font-size: .75rem; font-weight: 700; color: var(--text-2); padding: 4px 0; }
+.kz { position: relative; height: 40px; max-width: 100%; border: 1.5px solid transparent; background: var(--flaeche-2); border-radius: 8px; cursor: pointer; font-weight: 700; font-variant-numeric: tabular-nums; display: grid; place-items: center; }
+.kz:hover { border-color: var(--akzent); }
+.kz-leer { background: none; cursor: default; }
+.kz-frei { background: repeating-linear-gradient(135deg, var(--flaeche-2) 0 4px, var(--flaeche) 4px 8px); color: var(--text-2); font-weight: 400; }
+.kz-feiertag { color: var(--feiertag); }
+.kz-punkt { position: absolute; bottom: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--feiertag); }
+.kz-belegt { border: 2px dashed var(--text-2); }
+.kz-an { background: var(--akzent-zart); border-color: var(--akzent); color: var(--text); }
+.kz-start, .kz-ende { background: var(--akzent); color: var(--auf-akzent); }
+.kz-start .kz-punkt, .kz-ende .kz-punkt { background: var(--auf-akzent); }
+.kz-fremd:not(.kz-an) { opacity: .6; }
+.kal-hinweis { font-size: .9rem; color: var(--akzent-stark); font-weight: 700; }
+.kal-eingaben { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Zusammenfassung */
+.zf { margin: 0; display: grid; border: 1px solid var(--linie); border-radius: var(--r); }
+.zf-zeile { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; padding: 10px 14px; }
+.zf-zeile + .zf-zeile { border-top: 1px solid var(--linie); }
+.zf dt { color: var(--text-2); font-size: .9rem; }
+.zf dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.zf-rechnung { background: var(--akzent-zart); }
+
+/* Formular Stammdaten */
+.segment { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg { border: 1.5px solid var(--linie); background: var(--flaeche); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 700; }
+.seg-an { background: var(--akzent); border-color: var(--akzent); color: var(--auf-akzent); }
+.wochentage { display: flex; gap: 6px; flex-wrap: wrap; }
+.wt { width: 46px; height: 42px; border: 1.5px solid var(--linie); background: var(--flaeche); border-radius: 8px; cursor: pointer; font-weight: 700; }
+.wt-an { background: var(--akzent); border-color: var(--akzent); color: var(--auf-akzent); }
+.dialog .formgrid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+/* Prüfen */
+.tabelle-wrap { overflow-x: auto; border: 1px solid var(--linie); border-radius: var(--r); }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: 12px 14px; vertical-align: top; }
+th { background: var(--flaeche-2); font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); }
+tbody tr + tr td { border-top: 1px solid var(--linie); }
+.uebersicht td:first-child { width: 22%; }
+.uebersicht td:last-child { width: 1%; }
+.uebersicht .befunde { margin-top: 8px; }
+.mini { margin: 0; padding-left: 18px; }
+.zeilen { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zeilen td:last-child { white-space: normal; min-width: 220px; }
+.r { text-align: right; }
+.vorschau summary { cursor: pointer; font-weight: 700; color: var(--akzent-stark); padding: 4px 0; }
+.vorschau[open] { display: grid; gap: 10px; }
+
+/* Fertig */
+.fertig { justify-items: start; }
+.haken { width: 56px; height: 56px; border-radius: 50%; background: var(--ok-zart); color: var(--ok); display: grid; place-items: center; }
+.haken .ico { width: 30px; height: 30px; stroke-width: 2.5; }
+.code-kopf { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; flex-wrap: wrap; }
+.code { width: 100%; margin: 0; background: var(--flaeche-2); border-radius: 8px; padding: 14px; overflow: auto; font: .8rem/1.55 var(--f-mono); max-height: 320px; }
+.code-kurz { max-height: 220px; }
+.fertig .aktionen { width: 100%; }
+
+#toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 8px; font-weight: 700; z-index: 60; transition: opacity .2s, transform .2s; pointer-events: none; }
+#toast.toast-an { opacity: 1; transform: translate(-50%, 0); }
+
+/* Schmale Bildschirme */
+@media (max-width: 900px) {
+  .personen { grid-template-columns: minmax(0, 1fr); }
+  .liste { position: static; }
+  .stepper { order: 3; width: 100%; margin-left: 0; justify-content: space-between; }
+  .st-text { display: none; }
+  .st-aktiv .st-text { display: inline; }
+  .st-linie { flex: 1; }
+  .monat-pille { margin-left: auto; }
+}
+@media (max-width: 520px) {
+  .kal-eingaben { grid-template-columns: 1fr; }
+  .zf-zeile { grid-template-columns: 1fr; gap: 2px; }
+  .dlg-fuss .btn { flex: 1; }
+  .overlay { padding: 0; place-items: end stretch; }
+  .dialog { border-radius: 16px 16px 0 0; max-height: 94dvh; }
+}
+
+
+/* v2: Regionen, Ergebnis-Reiter */
+fieldset.feld .check { margin-top: 6px; }
+fieldset.feld .check small { font-weight: 400; }
+.fertig .segment { width: 100%; }
+.fertig #ausgabe { width: 100%; }
+.fertig table td { white-space: normal; }
+
+</style>
+</head>
+<body>
+  <div id="app"><p style="padding:24px">Wird geladen …</p></div>
+  <script>
+"use strict";
+(() => {
+  // src/kalender.ts
+  var LAENDER = {
+    BW: "Baden-W\xFCrttemberg",
+    BY: "Bayern",
+    BE: "Berlin",
+    BB: "Brandenburg",
+    HB: "Bremen",
+    HH: "Hamburg",
+    HE: "Hessen",
+    MV: "Mecklenburg-Vorpommern",
+    NI: "Niedersachsen",
+    NW: "Nordrhein-Westfalen",
+    RP: "Rheinland-Pfalz",
+    SL: "Saarland",
+    SN: "Sachsen",
+    ST: "Sachsen-Anhalt",
+    SH: "Schleswig-Holstein",
+    TH: "Th\xFCringen"
+  };
+  var REGIONEN = {
+    BY_MARIAE: { land: "BY", text: "Gemeinde mit Mari\xE4 Himmelfahrt (15.08.)", hilfe: "Gilt in bayerischen Gemeinden mit \xFCberwiegend katholischer Bev\xF6lkerung \u2013 das sind die meisten. Liste beim Bayerischen Landesamt f\xFCr Statistik." },
+    BY_AUGSBURG: { land: "BY", text: "Stadt Augsburg (Friedensfest 08.08.)", hilfe: "Nur im Stadtgebiet Augsburg." },
+    SN_FRONLEICHNAM: { land: "SN", text: "Gemeinde mit Fronleichnam", hilfe: "Einzelne Gemeinden im Landkreis Bautzen (sorbisches Siedlungsgebiet)." },
+    TH_FRONLEICHNAM: { land: "TH", text: "Gemeinde mit Fronleichnam", hilfe: "Landkreis Eichsfeld und einzelne Gemeinden im Unstrut-Hainich-Kreis und Wartburgkreis." }
+  };
+  var MONATE = ["Januar", "Februar", "M\xE4rz", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+  var WT_KURZ = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+  var p2 = (n) => String(n).padStart(2, "0");
+  function datum(j, m2, t) {
+    const d = new Date(Date.UTC(j, m2 - 1, t));
+    return `${d.getUTCFullYear()}-${p2(d.getUTCMonth() + 1)}-${p2(d.getUTCDate())}`;
+  }
+  function teile(d) {
+    const [j, m2, t] = d.split("-").map(Number);
+    return { j, m: m2, t };
+  }
+  function istDatum(d) {
+    if (typeof d !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return false;
+    const { j, m: m2, t } = teile(d);
+    return datum(j, m2, t) === d;
+  }
+  function plusTage(d, n) {
+    const { j, m: m2, t } = teile(d);
+    return datum(j, m2, t + n);
+  }
+  function wochentag(d) {
+    const { j, m: m2, t } = teile(d);
+    return (new Date(Date.UTC(j, m2 - 1, t)).getUTCDay() + 6) % 7;
+  }
+  var tageImMonat = (j, m2) => new Date(Date.UTC(j, m2, 0)).getUTCDate();
+  var monatsErster = (monat) => `${monat}-01`;
+  function monatsLetzter(monat) {
+    const [j, m2] = monat.split("-").map(Number);
+    return datum(j, m2, tageImMonat(j, m2));
+  }
+  function monatPlus(monat, n) {
+    const [j, m2] = monat.split("-").map(Number);
+    return datum(j, m2 + n, 1).slice(0, 7);
+  }
+  function kalendertage(von, bis) {
+    const a = teile(von), b = teile(bis);
+    return Math.round((Date.UTC(b.j, b.m - 1, b.t) - Date.UTC(a.j, a.m - 1, a.t)) / 864e5) + 1;
+  }
+  function fmt(d, mitJahr = true) {
+    if (!istDatum(d)) return "\u2013";
+    const { j, m: m2, t } = teile(d);
+    return mitJahr ? `${p2(t)}.${p2(m2)}.${j}` : `${p2(t)}.${p2(m2)}.`;
+  }
+  function monatsName(monat) {
+    const [j, m2] = monat.split("-").map(Number);
+    return `${MONATE[m2 - 1]} ${j}`;
+  }
+  function ostersonntag(j) {
+    const a = j % 19, b = Math.floor(j / 100), c = j % 100, d = Math.floor(b / 4), e = b % 4;
+    const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7, m2 = Math.floor((a + 11 * h + 22 * l) / 451);
+    const monat = Math.floor((h + l - 7 * m2 + 114) / 31), tag = (h + l - 7 * m2 + 114) % 31 + 1;
+    return datum(j, monat, tag);
+  }
+  function berechneFeiertage(j, land, regionen) {
+    const r = /* @__PURE__ */ new Map();
+    const os = ostersonntag(j);
+    const add = (d, name, nur) => {
+      if (!nur || nur.includes(land)) r.set(d, name);
+    };
+    const reg = (x) => regionen.includes(x) && REGIONEN[x].land === land;
+    add(datum(j, 1, 1), "Neujahr");
+    add(datum(j, 1, 6), "Heilige Drei K\xF6nige", ["BW", "BY", "ST"]);
+    add(datum(j, 3, 8), "Internationaler Frauentag", ["BE", "MV"]);
+    add(plusTage(os, -2), "Karfreitag");
+    add(os, "Ostersonntag", ["BB", "HE"]);
+    add(plusTage(os, 1), "Ostermontag");
+    add(datum(j, 5, 1), "Tag der Arbeit");
+    add(plusTage(os, 39), "Christi Himmelfahrt");
+    add(plusTage(os, 49), "Pfingstsonntag", ["BB", "HE"]);
+    add(plusTage(os, 50), "Pfingstmontag");
+    add(plusTage(os, 60), "Fronleichnam", ["BW", "BY", "HE", "NW", "RP", "SL"]);
+    if (reg("SN_FRONLEICHNAM") || reg("TH_FRONLEICHNAM")) r.set(plusTage(os, 60), "Fronleichnam (regional)");
+    if (reg("BY_AUGSBURG")) r.set(datum(j, 8, 8), "Augsburger Friedensfest");
+    add(datum(j, 8, 15), "Mari\xE4 Himmelfahrt", ["SL"]);
+    if (reg("BY_MARIAE")) r.set(datum(j, 8, 15), "Mari\xE4 Himmelfahrt (regional)");
+    add(datum(j, 9, 20), "Weltkindertag", ["TH"]);
+    add(datum(j, 10, 3), "Tag der Deutschen Einheit");
+    add(datum(j, 10, 31), "Reformationstag", ["BB", "HB", "HH", "MV", "NI", "SN", "ST", "SH", "TH"]);
+    add(datum(j, 11, 1), "Allerheiligen", ["BW", "BY", "NW", "RP", "SL"]);
+    if (land === "SN") {
+      let d = datum(j, 11, 22);
+      while (wochentag(d) !== 2) d = plusTage(d, -1);
+      r.set(d, "Bu\xDF- und Bettag");
+    }
+    add(datum(j, 12, 25), "1. Weihnachtstag");
+    add(datum(j, 12, 26), "2. Weihnachtstag");
+    return r;
+  }
+  var cache = /* @__PURE__ */ new Map();
+  function feiertag(d, land, regionen = []) {
+    const j = teile(d).j;
+    const key = `${j}|${land}|${[...regionen].sort().join(",")}`;
+    if (!cache.has(key)) cache.set(key, berechneFeiertage(j, land, regionen));
+    return cache.get(key).get(d);
+  }
+  function* tageVonBis(von, bis) {
+    for (let d = von; d <= bis; d = plusTage(d, 1)) yield d;
+  }
+  function schnittMitMonat(von, bis, monat) {
+    const a = von > monatsErster(monat) ? von : monatsErster(monat);
+    const b = bis < monatsLetzter(monat) ? bis : monatsLetzter(monat);
+    return a <= b ? [a, b] : null;
+  }
+  var ueberschneiden = (a1, a2, b1, b2) => a1 <= b2 && b1 <= a2;
+  function arbeitstage(von, bis, woche, ort2) {
+    let tage = 0;
+    const feiertage = [];
+    for (const d of tageVonBis(von, bis)) {
+      if (!woche[wochentag(d)]) continue;
+      if (feiertag(d, ort2.land, ort2.regionen)) feiertage.push(d);
+      else tage++;
+    }
+    return { tage, feiertage };
+  }
+
+  // src/parameter.ts
+  var JAHRESWERTE = {
+    2026: {
+      mindestlohn: 13.9,
+      minijobGrenze: 603,
+      kinderkrankTage: 15,
+      kinderkrankMax: 35,
+      kinderkrankTageAlleinerziehend: 30,
+      kinderkrankMaxAlleinerziehend: 70,
+      quelle: "MiLoV5 \xA7 1 Nr. 1; \xA7 8 Abs. 1a SGB IV; \xA7 45 Abs. 2a SGB V (Sonderregel 2024\u20132026)"
+    },
+    2027: {
+      mindestlohn: 14.6,
+      minijobGrenze: 633,
+      // Sonderregel läuft Ende 2026 aus. Wird sie verlängert, hier anpassen.
+      kinderkrankTage: 10,
+      kinderkrankMax: 25,
+      kinderkrankTageAlleinerziehend: 20,
+      kinderkrankMaxAlleinerziehend: 50,
+      quelle: "MiLoV5 \xA7 1 Nr. 2; \xA7 8 Abs. 1a SGB IV; \xA7 45 Abs. 2 SGB V (Regelfall, Stand 11/2026)"
+    }
+  };
+  var GRENZEN = {
+    /** Sachbezug-Freigrenze je Monat (§ 8 Abs. 2 S. 11 EStG) – Freigrenze, kein Freibetrag */
+    sachbezugFreigrenze: 50,
+    /** Aufmerksamkeiten zu persönlichen Anlässen (R 19.6 LStR), nur Sachzuwendungen */
+    geschenkFreigrenze: 60,
+    /** Entgeltfortzahlung 6 Wochen (§ 3 Abs. 1 EFZG) */
+    efzKalendertage: 42,
+    /** Wartezeit 4 Wochen (§ 3 Abs. 3 EFZG) */
+    wartezeitTage: 28,
+    /** Höchstarbeitszeit je Werktag (§ 3 ArbZG) */
+    maxTagesstunden: 10,
+    /** Fortbestand der Versicherungspflicht bei unbezahlter Freistellung (§ 7 Abs. 3 SGB IV) */
+    unbezahltMaxTage: 31,
+    /** § 3b EStG: steuerfreier Grundlohn höchstens 50 €/Std., SV-frei nur bis 25 €/Std. (§ 1 SvEV) */
+    grundlohn3bSteuer: 50,
+    grundlohn3bSv: 25,
+    /** Mutterschutzfristen (§ 3 MuSchG) in Tagen */
+    mutterschutzVorher: 42,
+    mutterschutzNachher: 56,
+    mutterschutzNachherVerlaengert: 84
+  };
+  function jahreswerte(monat) {
+    const jahr = Number(monat.slice(0, 4));
+    if (JAHRESWERTE[jahr]) return { werte: JAHRESWERTE[jahr], jahr, geschaetzt: false };
+    const bekannt = Object.keys(JAHRESWERTE).map(Number).sort((a, b) => a - b);
+    const naechstes = bekannt.filter((j) => j <= jahr).pop() ?? bekannt[0];
+    return { werte: JAHRESWERTE[naechstes], jahr: naechstes, geschaetzt: true };
+  }
+
+  // src/regeln.ts
+  var BESCHAEFTIGUNG = {
+    vollzeit: "Vollzeit",
+    teilzeit: "Teilzeit",
+    minijob: "Minijob",
+    werkstudent: "Werkstudent/in",
+    azubi: "Auszubildende/r"
+  };
+  var ort = (k) => ({ land: k.land, regionen: k.regionen ?? [] });
+  var kontext = (m2, ma) => ({ kopf: m2.kopf, ma, eintraege: m2.eintraege });
+  function stundenJeTag(ma) {
+    const n = ma.arbeitstage.filter(Boolean).length || 5;
+    return Math.round(ma.wochenstunden / n * 100) / 100;
+  }
+  function zahl(s) {
+    if (s == null || s.trim() === "") return void 0;
+    const t = s.trim().replace(/\s/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
+    const n = Number(t);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  var z0 = (s) => {
+    const n = zahl(s);
+    return n && !Number.isNaN(n) ? n : 0;
+  };
+  var euro = (n) => n.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
+  var std = (n) => n.toLocaleString("de-DE", { maximumFractionDigits: 2 }) + " Std.";
+  var r2 = (n) => Math.round(n * 100) / 100;
+  var GRUPPEN = [
+    ["zeit", "Arbeitszeit"],
+    ["abwesend", "Abwesenheit"],
+    ["geld", "Geld & Extras"],
+    ["sonst", "Sonstiges"]
+  ];
+  var JA_NEIN = [{ wert: "ja", text: "Ja" }, { wert: "nein", text: "Nein" }];
+  var WEISS_NICHT = { wert: "unbekannt", text: "Wei\xDF ich nicht" };
+  var SYMBOL = {
+    uhr: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 4v5l3.5 2",
+    plus: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 5v8m-4-4h8",
+    sonne: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4",
+    krank: "M9 3h6v6h6v6h-6v6H9v-6H3V9h6z",
+    kind: "M12 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM6 21v-3a6 6 0 0 1 12 0v3",
+    pause: "M5 5h14v14H5zM10 9v6m4-6v6",
+    mond: "M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z",
+    geld: "M3 7h18v10H3zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM6 10v4m12-4v4",
+    geschenk: "M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-1.5-3-5-3-5-1s3 1 5 1c2 0 5 1 5-1s-3.5-2-5 1",
+    pfeil: "M4 12h12m-4-5 5 5-5 5M20 4v16",
+    baby: "M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-5 18c0-3 2.2-6 5-6s5 3 5 6",
+    tuer: "M5 21V3h10v18M15 3l4 2v16l-4-2M11 12h.01",
+    sprech: "M4 5h16v11H9l-5 4z"
+  };
+  var monatNr = (k) => teile(monatsErster(k.kopf.monat)).m;
+  var KATEGORIEN = [
+    {
+      typ: "arbeitszeit",
+      titel: "Gearbeitete Stunden",
+      gruppe: "zeit",
+      symbol: SYMBOL.uhr,
+      nurStundenlohn: true,
+      einmalig: true,
+      kurz: "Wie viele Stunden hat die Person in diesem Monat gearbeitet?",
+      felder: [{ key: "stunden", art: "stunden", pflicht: true, frage: "Wie viele Stunden wurden insgesamt gearbeitet?", hilfe: "Nur tats\xE4chlich gearbeitete Stunden. Urlaub, Krankheit und Feiertage tragen Sie nicht hier ein \u2013 die rechnen wir getrennt." }]
+    },
+    {
+      typ: "ueberstunden",
+      titel: "\xDCberstunden",
+      gruppe: "zeit",
+      symbol: SYMBOL.plus,
+      kurz: "Es wurde mehr gearbeitet als vereinbart.",
+      felder: [
+        { key: "stunden", art: "stunden", pflicht: true, frage: "Wie viele \xDCberstunden sind angefallen?" },
+        { key: "verwendung", art: "auswahl", pflicht: true, frage: "Was soll mit den \xDCberstunden passieren?", optionen: [
+          { wert: "auszahlen", text: "Mit diesem Lohn auszahlen" },
+          { wert: "zeitkonto", text: "Auf das Zeitkonto buchen", hilfe: "Wird sp\xE4ter mit Freizeit ausgeglichen." }
+        ] },
+        { key: "zuschlag", art: "zahl", frage: "Gibt es einen \xDCberstundenzuschlag? Wenn ja, wie viel Prozent?", hilfe: "Steht meist im Arbeits- oder Tarifvertrag. Kein Zuschlag: 0 eintragen.", zeigeWenn: (w) => w.verwendung === "auszahlen" }
+      ]
+    },
+    {
+      typ: "zuschlaege",
+      titel: "Nacht-, Sonntags- oder Feiertagsarbeit",
+      gruppe: "zeit",
+      symbol: SYMBOL.mond,
+      kurz: "Es wurde nachts, sonntags oder an Feiertagen gearbeitet.",
+      felder: [
+        { key: "nacht", art: "stunden", frage: "Stunden zwischen 20 und 6 Uhr", hilfe: "Keine: einfach leer lassen." },
+        { key: "nacht_0_4", art: "stunden", frage: "Davon zwischen 0 und 4 Uhr \u2013 nur wenn die Schicht schon vor Mitternacht begonnen hat", hilfe: "F\xFCr diese Stunden gilt ein h\xF6herer steuerfreier Zuschlag (40 % statt 25 %). Wenn Sie es nicht wissen: leer lassen.", zeigeWenn: (w) => z0(w.nacht) > 0 },
+        { key: "sonntag", art: "stunden", frage: "Stunden an Sonntagen" },
+        { key: "feiertag", art: "stunden", frage: "Stunden an Feiertagen", hilfe: "Auch Silvester ab 14 Uhr und Heiligabend ab 14 Uhr z\xE4hlen hier mit." },
+        { key: "feiertag_150", art: "stunden", frage: "Davon am 24.12. ab 14 Uhr, am 25./26.12. oder am 1. Mai", hilfe: "F\xFCr diese Tage gilt ein h\xF6herer steuerfreier Zuschlag (150 % statt 125 %).", zeigeWenn: (w, k) => z0(w.feiertag) > 0 && [5, 12].includes(monatNr(k)) }
+      ]
+    },
+    {
+      typ: "urlaub",
+      titel: "Urlaub",
+      gruppe: "abwesend",
+      symbol: SYMBOL.sonne,
+      zeitraum: true,
+      kurz: "Bezahlter Erholungsurlaub.",
+      felder: [
+        { key: "zeitraum", art: "zeitraum", pflicht: true, frage: "Von wann bis wann war Urlaub?", hilfe: "W\xE4hlen Sie den ersten und den letzten Urlaubstag. Wochenenden und Feiertage werden automatisch nicht mitgez\xE4hlt." },
+        { key: "halbtage", art: "zahl", frage: "Waren halbe Urlaubstage dabei? Wenn ja, wie viele?", hilfe: "Zum Beispiel Heiligabend als halber Tag. Keine halben Tage: einfach weiter." }
+      ]
+    },
+    {
+      typ: "krank",
+      titel: "Krankheit",
+      gruppe: "abwesend",
+      symbol: SYMBOL.krank,
+      zeitraum: true,
+      kurz: "Die Person war arbeitsunf\xE4hig krank.",
+      felder: [
+        { key: "zeitraum", art: "zeitraum", pflicht: true, frage: "Von wann bis wann war die Person krank?", hilfe: "Wenn die Krankheit noch andauert, w\xE4hlen Sie als Ende den letzten bekannten Tag laut Krankmeldung. Bitte keine Diagnose angeben \u2013 die brauchen wir nicht." },
+        { key: "au", art: "auswahl", pflicht: true, frage: "Gibt es eine Krankmeldung vom Arzt?", hilfe: "Bei gesetzlich Versicherten l\xE4uft die Krankmeldung elektronisch (eAU). Wir rufen sie bei der Krankenkasse ab. Privat Versicherte m\xFCssen die Papier-Bescheinigung abgeben.", optionen: [
+          { wert: "ja", text: "Ja, die Person war beim Arzt" },
+          { wert: "nein", text: "Nein, ohne Arzt" },
+          WEISS_NICHT
+        ] },
+        { key: "unfall", art: "auswahl", pflicht: true, frage: "War es ein Arbeits- oder Wegeunfall?", optionen: JA_NEIN },
+        { key: "vorher", art: "auswahl", frage: "War die Person in den letzten 6 Monaten schon einmal wegen derselben Krankheit krank?", hilfe: "Wichtig f\xFCr die 6-Wochen-Frist der Lohnfortzahlung. Wenn Sie es nicht wissen, w\xE4hlen Sie \u201EWei\xDF ich nicht\u201C.", optionen: [...JA_NEIN, WEISS_NICHT] },
+        { key: "vorher_wann", art: "text", frage: "Wann war das ungef\xE4hr?", hilfe: "Zum Beispiel \u201E10.\u201321. M\xE4rz\u201C. Wir pr\xFCfen dann, ob die Lohnfortzahlung schon verbraucht ist.", zeigeWenn: (w) => w.vorher === "ja" }
+      ]
+    },
+    {
+      typ: "kindkrank",
+      titel: "Kind krank",
+      gruppe: "abwesend",
+      symbol: SYMBOL.kind,
+      zeitraum: true,
+      kurz: "Die Person hat ein krankes Kind betreut.",
+      felder: [
+        { key: "zeitraum", art: "zeitraum", pflicht: true, frage: "Von wann bis wann wurde das Kind betreut?" },
+        { key: "alter", art: "auswahl", pflicht: true, frage: "Ist das Kind j\xFCnger als 12 Jahre?", optionen: [...JA_NEIN, { wert: "behindert", text: "Nein, aber das Kind hat eine Behinderung und braucht Hilfe" }] },
+        { key: "bescheinigung", art: "auswahl", pflicht: true, frage: "Gibt es eine Bescheinigung vom Kinderarzt?", optionen: JA_NEIN },
+        { key: "bezahlt", art: "auswahl", pflicht: true, frage: "Zahlen Sie den Lohn f\xFCr diese Tage weiter?", hilfe: "Meist nicht \u2013 dann zahlt die Krankenkasse Kinderkrankengeld. Steht im Arbeitsvertrag nichts dazu, kann ein Anspruch auf Weiterzahlung f\xFCr wenige Tage bestehen (\xA7 616 BGB).", optionen: [
+          { wert: "nein", text: "Nein, unbezahlt (Kinderkrankengeld)" },
+          { wert: "ja", text: "Ja, Lohn l\xE4uft weiter" },
+          WEISS_NICHT
+        ] }
+      ]
+    },
+    {
+      typ: "unbezahlt",
+      titel: "Unbezahlt frei",
+      gruppe: "abwesend",
+      symbol: SYMBOL.pause,
+      zeitraum: true,
+      kurz: "Die Person hatte frei, ohne Lohn.",
+      felder: [
+        { key: "zeitraum", art: "zeitraum", pflicht: true, frage: "Von wann bis wann war die Person unbezahlt frei?" },
+        { key: "grund", art: "text", frage: "Warum? (optional)", hilfe: "Zum Beispiel Sonderurlaub, unentschuldigtes Fehlen." }
+      ]
+    },
+    {
+      typ: "mutterschutz",
+      titel: "Mutterschutz / Elternzeit",
+      gruppe: "abwesend",
+      symbol: SYMBOL.baby,
+      zeitraum: true,
+      kurz: "Schwangerschaft, Mutterschutz oder Elternzeit.",
+      felder: [
+        { key: "art", art: "auswahl", pflicht: true, frage: "Worum geht es?", optionen: [
+          { wert: "beschaeftigungsverbot", text: "Besch\xE4ftigungsverbot vom Arzt" },
+          { wert: "mutterschutz", text: "Mutterschutz (vor/nach der Geburt)" },
+          { wert: "elternzeit", text: "Elternzeit" }
+        ] },
+        { key: "geburt", art: "datum", frage: "Voraussichtlicher oder tats\xE4chlicher Geburtstermin", hilfe: "Steht im Mutterpass bzw. in der Geburtsurkunde. Daraus berechnen wir die Schutzfristen.", zeigeWenn: (w) => w.art === "mutterschutz", pflicht: true },
+        { key: "verlaengert", art: "auswahl", frage: "Fr\xFChgeburt, Mehrlinge oder Behinderung des Kindes?", hilfe: "Dann verl\xE4ngert sich die Schutzfrist nach der Geburt auf 12 Wochen.", zeigeWenn: (w) => w.art === "mutterschutz", optionen: [...JA_NEIN, WEISS_NICHT] },
+        { key: "zeitraum", art: "zeitraum", pflicht: true, frage: "Von wann bis wann?", hilfe: "Wenn das Ende noch nicht feststeht, w\xE4hlen Sie den Monatsletzten." }
+      ]
+    },
+    {
+      typ: "einmalzahlung",
+      titel: "Pr\xE4mie oder Sonderzahlung",
+      gruppe: "geld",
+      symbol: SYMBOL.geld,
+      kurz: "Bonus, Weihnachtsgeld, Urlaubsgeld oder eine andere Extrazahlung.",
+      felder: [
+        { key: "art", art: "auswahl", pflicht: true, frage: "Was f\xFCr eine Zahlung ist es?", optionen: [
+          { wert: "praemie", text: "Pr\xE4mie / Bonus" },
+          { wert: "weihnachtsgeld", text: "Weihnachtsgeld" },
+          { wert: "urlaubsgeld", text: "Urlaubsgeld" },
+          { wert: "jubilaeum", text: "Jubil\xE4umszahlung" },
+          { wert: "sonstige", text: "Etwas anderes" }
+        ] },
+        { key: "betrag", art: "betrag", pflicht: true, frage: "Wie hoch ist der Betrag (brutto)?", hilfe: "Brutto hei\xDFt: vor Abzug von Steuern und Sozialversicherung." },
+        { key: "wiederkehrend", art: "auswahl", frage: "Gibt es diese Zahlung jedes Jahr?", optionen: JA_NEIN, zeigeWenn: (_w, k) => k.ma.beschaeftigung === "minijob" }
+      ]
+    },
+    {
+      typ: "sachbezug",
+      titel: "Gutschein oder Geschenk",
+      gruppe: "geld",
+      symbol: SYMBOL.geschenk,
+      kurz: "Tankgutschein, Einkaufskarte, Geburtstagsgeschenk.",
+      felder: [
+        { key: "art", art: "auswahl", pflicht: true, frage: "Was hat die Person bekommen?", optionen: [
+          { wert: "gutschein", text: "Gutschein / Guthabenkarte", hilfe: "z. B. Tankgutschein, Einkaufskarte" },
+          { wert: "geschenk", text: "Geschenk zu einem pers\xF6nlichen Anlass", hilfe: "z. B. Geburtstag, Hochzeit, Geburt eines Kindes" },
+          { wert: "sonstige", text: "Etwas anderes" }
+        ] },
+        { key: "form", art: "auswahl", pflicht: true, frage: "War es eine Sache (z. B. Blumen, Buch, Gutschein) oder Bargeld/\xDCberweisung?", zeigeWenn: (w) => w.art === "geschenk", optionen: [
+          { wert: "sache", text: "Eine Sache oder ein Gutschein" },
+          { wert: "geld", text: "Bargeld oder \xDCberweisung" }
+        ] },
+        { key: "betrag", art: "betrag", pflicht: true, frage: "Welchen Wert hatte es (inkl. MwSt.)?" }
+      ]
+    },
+    {
+      typ: "vorschuss",
+      titel: "Vorschuss bereits gezahlt",
+      gruppe: "geld",
+      symbol: SYMBOL.pfeil,
+      kurz: "Sie haben schon Geld vorab \xFCberwiesen.",
+      felder: [
+        { key: "betrag", art: "betrag", pflicht: true, frage: "Wie viel wurde vorab ausgezahlt?", hilfe: "Der Betrag wird vom Auszahlungsbetrag abgezogen." },
+        { key: "datum", art: "datum", pflicht: true, frage: "Wann wurde gezahlt?" }
+      ]
+    },
+    {
+      typ: "austritt",
+      titel: "Person h\xF6rt auf",
+      gruppe: "sonst",
+      symbol: SYMBOL.tuer,
+      einmalig: true,
+      kurz: "K\xFCndigung, Aufhebungsvertrag oder Vertragsende.",
+      felder: [
+        { key: "datum", art: "datum", pflicht: true, frage: "Was ist der letzte Tag laut Vertrag?", hilfe: "Das rechtliche Ende des Arbeitsverh\xE4ltnisses, nicht der letzte Tag im B\xFCro." },
+        { key: "grund", art: "auswahl", pflicht: true, frage: "Wie endet das Arbeitsverh\xE4ltnis?", optionen: [
+          { wert: "an", text: "Die Person hat gek\xFCndigt" },
+          { wert: "ag", text: "Wir haben gek\xFCndigt" },
+          { wert: "aufhebung", text: "Aufhebungsvertrag" },
+          { wert: "befristung", text: "Befristung l\xE4uft aus" }
+        ] },
+        { key: "resturlaub", art: "zahl", frage: "Wie viele Urlaubstage sind noch offen und sollen ausgezahlt werden?", hilfe: "Keine: 0 eintragen." }
+      ]
+    },
+    {
+      typ: "sonstiges",
+      titel: "Etwas anderes",
+      gruppe: "sonst",
+      symbol: SYMBOL.sprech,
+      kurz: "Passt nichts? Schreiben Sie uns, was los war.",
+      felder: [{ key: "text", art: "text", pflicht: true, frage: "Was sollen wir wissen?" }]
+    }
+  ];
+  var kat = (typ) => KATEGORIEN.find((k) => k.typ === typ);
+  var optionText = (typ, feld, wert) => kat(typ).felder.find((f) => f.key === feld)?.optionen?.find((o) => o.wert === wert)?.text ?? (wert || "");
+  function sichtbareFelder(k, w, ctx2) {
+    return k.felder.filter((f) => !f.zeigeWenn || f.zeigeWenn(w, ctx2));
+  }
+  function sollStunden(k) {
+    const { tage, feiertage } = arbeitstage(monatsErster(k.kopf.monat), monatsLetzter(k.kopf.monat), k.ma.arbeitstage, ort(k.kopf));
+    return r2((tage + feiertage.length) * stundenJeTag(k.ma));
+  }
+  function bezahlteArt(e) {
+    return e.typ === "urlaub" || e.typ === "krank" || e.typ === "kindkrank" && e.w.bezahlt === "ja";
+  }
+  function zeitraumwerte(e, k) {
+    const von = e.w.zeitraum_von, bis = e.w.zeitraum_bis;
+    if (!istDatum(von) || !istDatum(bis) || bis < von) return null;
+    const kt = kalendertage(von, bis);
+    const s = schnittMitMonat(von, bis, k.kopf.monat);
+    if (!s) return { tage: 0, stunden: 0, tageBezahlt: 0, stundenBezahlt: 0, kalendertage: kt, feiertage: [], ausserhalb: true };
+    const { tage, feiertage } = arbeitstage(s[0], s[1], k.ma.arbeitstage, ort(k.kopf));
+    let t = tage;
+    if (e.typ === "urlaub") t -= z0(e.w.halbtage) / 2;
+    let bezahlt = bezahlteArt(e) ? t : 0;
+    if (e.typ === "krank") {
+      const efzEnde = plusTage(von, GRENZEN.efzKalendertage - 1);
+      const wartezeitEnde = k.ma.eintritt ? plusTage(k.ma.eintritt, GRENZEN.wartezeitTage - 1) : void 0;
+      bezahlt = 0;
+      for (const d of tageVonBis(s[0], s[1])) {
+        if (!k.ma.arbeitstage[wochentag(d)] || feiertag(d, k.kopf.land, k.kopf.regionen)) continue;
+        if (d > efzEnde) continue;
+        if (wartezeitEnde && d <= wartezeitEnde) continue;
+        bezahlt++;
+      }
+    }
+    const sjt = stundenJeTag(k.ma);
+    return {
+      tage: t,
+      stunden: r2(t * sjt),
+      tageBezahlt: bezahlt,
+      stundenBezahlt: r2(bezahlt * sjt),
+      kalendertage: kt,
+      feiertage,
+      ausserhalb: s[0] !== von || s[1] !== bis
+    };
+  }
+  function feiertagsverguetung(k) {
+    const ohneLohn = k.eintraege.filter((e) => e.maId === k.ma.id && (e.typ === "unbezahlt" || e.typ === "mutterschutz" || e.typ === "kindkrank" && e.w.bezahlt !== "ja"));
+    const austritt = k.eintraege.find((e) => e.maId === k.ma.id && e.typ === "austritt")?.w.datum;
+    const tage = [];
+    for (const d of tageVonBis(monatsErster(k.kopf.monat), monatsLetzter(k.kopf.monat))) {
+      if (!k.ma.arbeitstage[wochentag(d)] || !feiertag(d, k.kopf.land, k.kopf.regionen)) continue;
+      if (k.ma.eintritt && d < k.ma.eintritt) continue;
+      if (austritt && d > austritt) continue;
+      if (ohneLohn.some((e) => istDatum(e.w.zeitraum_von) && istDatum(e.w.zeitraum_bis) && d >= e.w.zeitraum_von && d <= e.w.zeitraum_bis)) continue;
+      tage.push(d);
+    }
+    return { tage, stunden: r2(tage.length * stundenJeTag(k.ma)) };
+  }
+  function bezahlteAbwesenheit(m2, ma) {
+    const k = kontext(m2, ma);
+    return r2(m2.eintraege.filter((e) => e.maId === ma.id && bezahlteArt(e)).reduce((s, e) => s + (zeitraumwerte(e, k)?.stundenBezahlt || 0), 0));
+  }
+  function stundensatz(ma) {
+    return ma.lohnform === "stundenlohn" ? ma.stundenlohn || 0 : (ma.gehalt || 0) / (ma.wochenstunden * 13 / 3 || 1);
+  }
+  function verdienst(m2, ma) {
+    const k = kontext(m2, ma);
+    const eigene = m2.eintraege.filter((e) => e.maId === ma.id);
+    let n = ma.lohnform === "gehalt" ? ma.gehalt || 0 : (z0(eigene.find((e) => e.typ === "arbeitszeit")?.w.stunden) + bezahlteAbwesenheit(m2, ma) + feiertagsverguetung(k).stunden) * (ma.stundenlohn || 0);
+    for (const e of eigene) {
+      if (e.typ === "einmalzahlung") n += z0(e.w.betrag);
+      if (e.typ === "ueberstunden" && e.w.verwendung === "auszahlen") n += z0(e.w.stunden) * stundensatz(ma) * (1 + z0(e.w.zuschlag) / 100);
+    }
+    return r2(n);
+  }
+  function sachbezugSumme(m2, ma) {
+    return r2(m2.eintraege.filter((e) => e.maId === ma.id && e.typ === "sachbezug" && e.w.art !== "geschenk").reduce((s, e) => s + z0(e.w.betrag), 0));
+  }
+  function mutterschutzfristen(geburt, verlaengert) {
+    return {
+      von: plusTage(geburt, -GRENZEN.mutterschutzVorher),
+      bis: plusTage(geburt, verlaengert ? GRENZEN.mutterschutzNachherVerlaengert : GRENZEN.mutterschutzNachher)
+    };
+  }
+  function pruefeFeld(f, w, k) {
+    const out = [];
+    const b = (stufe, text) => out.push({ stufe, text, feld: f.key });
+    const monat = k.kopf.monat;
+    if (f.art === "zeitraum") {
+      const von = w[`${f.key}_von`], bis = w[`${f.key}_bis`];
+      if (!von && !bis) {
+        if (f.pflicht) b("fehler", "Bitte w\xE4hlen Sie den ersten und den letzten Tag.");
+        return out;
+      }
+      if (!istDatum(von)) {
+        b("fehler", "Der erste Tag fehlt oder ist kein g\xFCltiges Datum.");
+        return out;
+      }
+      if (!istDatum(bis)) {
+        b("fehler", "Der letzte Tag fehlt oder ist kein g\xFCltiges Datum.");
+        return out;
+      }
+      if (bis < von) {
+        b("fehler", "Der letzte Tag liegt vor dem ersten Tag.");
+        return out;
+      }
+      if (!schnittMitMonat(von, bis, monat)) b("fehler", "Der Zeitraum liegt komplett au\xDFerhalb des Abrechnungsmonats. Bitte im richtigen Monat melden.");
+      else if (von < monatsErster(monat) || bis > monatsLetzter(monat)) b("info", "Der Zeitraum reicht \xFCber den Monat hinaus. Abgerechnet werden nur die Tage in diesem Monat; den Rest \xFCbernehmen wir in den Folgemonat.");
+      if (k.ma.eintritt && von < k.ma.eintritt) b("fehler", `Der Zeitraum beginnt vor dem Eintritt am ${fmt(k.ma.eintritt)}.`);
+      return out;
+    }
+    const v = w[f.key];
+    if (v == null || v.trim() === "") {
+      if (f.pflicht) b("fehler", f.art === "auswahl" ? "Bitte w\xE4hlen Sie eine Antwort." : "Bitte f\xFCllen Sie dieses Feld aus.");
+      return out;
+    }
+    if (f.art === "stunden" || f.art === "betrag" || f.art === "zahl") {
+      const n = zahl(v);
+      if (Number.isNaN(n)) {
+        b("fehler", "Bitte nur eine Zahl eingeben, z. B. 12,5.");
+        return out;
+      }
+      if (n < 0) {
+        b("fehler", "Negative Werte sind nicht m\xF6glich.");
+        return out;
+      }
+      if (f.pflicht && n === 0) b("fehler", "Der Wert ist 0. Wenn nichts angefallen ist, brechen Sie diesen Eintrag einfach ab.");
+      if ((f.art === "stunden" || f.art === "betrag") && Math.round(n * 100) !== n * 100) b("fehler", "H\xF6chstens zwei Nachkommastellen, z. B. 7,75.");
+      if (f.art === "stunden" && n > 300) b("fehler", "Mehr als 300 Stunden in einem Monat sind nicht m\xF6glich. Tippfehler?");
+      if (f.art === "betrag" && n > 5e4) b("warnung", "Sehr hoher Betrag. Bitte pr\xFCfen Sie die Eingabe.");
+    }
+    if (f.art === "datum" && !istDatum(v)) b("fehler", "Bitte ein g\xFCltiges Datum w\xE4hlen.");
+    return out;
+  }
+  function pruefeEintrag(e, k, m2) {
+    const kategorie = kat(e.typ);
+    const out = [];
+    for (const f of sichtbareFelder(kategorie, e.w, k)) out.push(...pruefeFeld(f, e.w, k));
+    if (out.some((b2) => b2.stufe === "fehler")) return out;
+    const b = (stufe, text) => out.push({ stufe, text });
+    const ma = k.ma, monat = k.kopf.monat;
+    const jw = jahreswerte(monat).werte;
+    const zr = kategorie.zeitraum ? zeitraumwerte(e, k) : null;
+    const n = (key) => z0(e.w[key]);
+    switch (e.typ) {
+      case "arbeitszeit": {
+        const soll = sollStunden(k), h = n("stunden");
+        const at = arbeitstage(monatsErster(monat), monatsLetzter(monat), ma.arbeitstage, ort(k.kopf)).tage;
+        if (at > 0 && h / at > GRENZEN.maxTagesstunden) b("warnung", `Das sind im Schnitt ${std(h / at)} je Arbeitstag. Erlaubt sind h\xF6chstens 10 Stunden am Tag (\xA7 3 Arbeitszeitgesetz).`);
+        if (soll > 0 && h > soll * 1.5) b("warnung", `Deutlich mehr als vereinbart (etwa ${std(soll)} im Monat). Stimmt die Zahl?`);
+        if (soll > 0 && h < soll * 0.3 && ma.beschaeftigung !== "minijob") b("info", `Deutlich weniger als vereinbart (etwa ${std(soll)} im Monat). Gab es Urlaub oder Krankheit? Dann bitte zus\xE4tzlich eintragen.`);
+        break;
+      }
+      case "ueberstunden":
+        if (ma.lohnform === "stundenlohn") b("info", "Bei Stundenlohn sind \xDCberstunden meist schon in den gearbeiteten Stunden enthalten. Tragen Sie sie hier nur ein, wenn sie zus\xE4tzlich bezahlt werden.");
+        if (e.w.verwendung === "auszahlen" && n("zuschlag") > 100) b("warnung", "Ein Zuschlag \xFCber 100 % ist ungew\xF6hnlich. Bitte pr\xFCfen.");
+        break;
+      case "urlaub":
+        if (zr && zr.tage <= 0 && !zr.ausserhalb) b("fehler", "In diesem Zeitraum liegt kein Arbeitstag der Person (nur Wochenende oder Feiertage). Bitte Zeitraum pr\xFCfen.");
+        if (zr && zr.feiertage.length) b("info", `${zr.feiertage.length} Feiertag(e) im Zeitraum z\xE4hlen nicht als Urlaubstag.`);
+        if (n("halbtage") && zr && n("halbtage") > (zr.tage + n("halbtage") / 2) * 2) b("fehler", "Mehr halbe Tage als Urlaubstage im Zeitraum.");
+        if (zr && zr.tage > 25) b("warnung", "Mehr als 25 Urlaubstage am St\xFCck. Bitte pr\xFCfen.");
+        break;
+      case "krank": {
+        if (!zr) break;
+        if (zr.kalendertage > GRENZEN.efzKalendertage) b("warnung", `Die Krankheit dauert ${zr.kalendertage} Kalendertage. Nach 6 Wochen endet die Lohnfortzahlung, danach zahlt die Krankenkasse Krankengeld. Wir k\xFCmmern uns um die Meldung.`);
+        if (e.w.vorher === "ja") b("warnung", "Gleiche Krankheit innerhalb von 6 Monaten (Fortsetzungserkrankung): Die fr\xFCheren Tage werden auf die 6 Wochen angerechnet (\xA7 3 Abs. 1 EFZG). Wir pr\xFCfen das.");
+        if (zr.kalendertage > 3 && e.w.au === "nein") b("warnung", "Ab dem 4. Krankheitstag ist eine \xE4rztliche Krankmeldung n\xF6tig (\xA7 5 EFZG). Ohne Krankmeldung kann die Lohnfortzahlung entfallen.");
+        if (e.w.au === "unbekannt") b("info", "Kein Problem: Wir fragen die elektronische Krankmeldung bei der Krankenkasse ab.");
+        if (e.w.unfall === "ja") b("warnung", "Arbeitsunfall: Dauert die Arbeitsunf\xE4higkeit l\xE4nger als 3 Tage, muss die Unfallanzeige innerhalb von 3 Tagen an die Berufsgenossenschaft (\xA7 193 SGB VII).");
+        if (ma.eintritt && istDatum(e.w.zeitraum_von) && kalendertage(ma.eintritt, e.w.zeitraum_von) <= GRENZEN.wartezeitTage) b("warnung", "Die Person ist noch keine 4 Wochen im Betrieb. In dieser Zeit besteht kein Anspruch auf Lohnfortzahlung (\xA7 3 Abs. 3 EFZG), die Krankenkasse zahlt Krankengeld.");
+        if (zr.tage === 0 && !zr.ausserhalb) b("info", "Im Zeitraum liegt kein Arbeitstag der Person. Es f\xE4llt keine Lohnfortzahlung an.");
+        break;
+      }
+      case "kindkrank":
+        if (e.w.alter === "nein") b("warnung", "F\xFCr Kinder ab 12 Jahren (ohne Behinderung) gibt es kein Kinderkrankengeld. Die Tage sind dann unbezahlt frei.");
+        if (e.w.bescheinigung === "nein") b("warnung", "Ohne \xE4rztliche Bescheinigung zahlt die Krankenkasse kein Kinderkrankengeld. Bitte reichen Sie sie nach.");
+        if (e.w.bezahlt === "unbekannt") b("info", "Wir pr\xFCfen anhand des Arbeitsvertrags, ob der Lohn weiterl\xE4uft (\xA7 616 BGB).");
+        if (zr && zr.tage > jw.kinderkrankTage) b("warnung", `Mehr als ${jw.kinderkrankTage} Arbeitstage am St\xFCck. Kinderkrankengeld gibt es ${monat.slice(0, 4)} f\xFCr h\xF6chstens ${jw.kinderkrankTage} Tage je Kind und Elternteil (Alleinerziehende ${jw.kinderkrankTageAlleinerziehend}).`);
+        break;
+      case "unbezahlt":
+        if (zr && zr.kalendertage > GRENZEN.unbezahltMaxTage) b("warnung", "Unbezahlt frei l\xE4nger als einen Monat: Die Person ist danach nicht mehr \xFCber Sie sozialversichert (\xA7 7 Abs. 3 SGB IV). Wir melden sie ab; bitte informieren Sie die Person, dass sie sich selbst versichern muss.");
+        break;
+      case "mutterschutz":
+        if (e.w.art === "elternzeit") b("info", "Bitte senden Sie uns den Antrag auf Elternzeit, falls noch nicht geschehen.");
+        if (e.w.art === "beschaeftigungsverbot") b("info", "Bitte senden Sie uns das \xE4rztliche Attest zum Besch\xE4ftigungsverbot. Der Lohn wird \xFCber die U2 erstattet.");
+        if (e.w.art === "mutterschutz" && istDatum(e.w.geburt)) {
+          const f = mutterschutzfristen(e.w.geburt, e.w.verlaengert === "ja");
+          b("info", `Schutzfrist laut Geburtstermin: ${fmt(f.von)} bis ${fmt(f.bis)}. Sie zahlen einen Zuschuss zum Mutterschaftsgeld; die Erstattung (U2) beantragen wir.`);
+          const imMonat = schnittMitMonat(f.von, f.bis, monat);
+          if (imMonat && istDatum(e.w.zeitraum_von) && istDatum(e.w.zeitraum_bis) && (e.w.zeitraum_von > imMonat[0] || e.w.zeitraum_bis < imMonat[1]))
+            b("warnung", `Der eingetragene Zeitraum deckt die Schutzfrist in diesem Monat (${fmt(imMonat[0], false)}\u2013${fmt(imMonat[1], false)}) nicht ab. Nach der Geburt ist eine Besch\xE4ftigung verboten, vorher nur auf ausdr\xFCcklichen Wunsch der Mitarbeiterin. Bitte pr\xFCfen.`);
+        }
+        break;
+      case "zuschlaege": {
+        const nacht = n("nacht"), sonntag = n("sonntag"), feier = n("feiertag");
+        if (nacht + sonntag + feier === 0) b("fehler", "Bitte tragen Sie mindestens bei einer Art Stunden ein.");
+        if (n("nacht_0_4") > nacht) b("fehler", "Die Stunden zwischen 0 und 4 Uhr k\xF6nnen nicht mehr sein als alle Nachtstunden.");
+        if (n("feiertag_150") > feier) b("fehler", "Die Stunden an Weihnachten/1. Mai k\xF6nnen nicht mehr sein als alle Feiertagsstunden.");
+        let ft = 0, so = 0;
+        for (const d of tageVonBis(monatsErster(monat), monatsLetzter(monat))) {
+          if (feiertag(d, k.kopf.land, k.kopf.regionen)) ft++;
+          if (wochentag(d) === 6) so++;
+        }
+        const dez2 = monatNr(k) === 12;
+        const moeglich = ft * 24 + (dez2 ? 20 : 0);
+        if (feier > 0 && moeglich === 0) b("warnung", "In diesem Monat gibt es an Ihrem Ort keinen Feiertag. Sind Sonntagsstunden gemeint?");
+        else if (feier > moeglich) b("fehler", `Mehr Feiertagsstunden als m\xF6glich (${ft} Feiertag(e) im Monat).`);
+        if (sonntag > so * 24) b("fehler", `Mehr Sonntagsstunden als m\xF6glich (${so} Sonntage im Monat).`);
+        if (sonntag > 0 && ["BB", "HE"].includes(k.kopf.land)) {
+          const hohe = [...tageVonBis(monatsErster(monat), monatsLetzter(monat))].filter((d) => wochentag(d) === 6 && feiertag(d, k.kopf.land, k.kopf.regionen));
+          if (hohe.length) b("info", `${hohe.map((d) => feiertag(d, k.kopf.land, k.kopf.regionen)).join(" und ")} ist in Ihrem Bundesland ein gesetzlicher Feiertag. Arbeit an diesem Tag bitte als Feiertagsstunden eintragen, nicht als Sonntagsstunden.`);
+        }
+        if (dez2 && feier > 0) b("info", "Hinweis: Silvester ab 14 Uhr z\xE4hlt wie ein Feiertag, Heiligabend ab 14 Uhr wie der 25./26.12.");
+        break;
+      }
+      case "einmalzahlung":
+        if (ma.beschaeftigung === "minijob") b("warnung", e.w.wiederkehrend === "ja" ? `Bei Minijobs z\xE4hlen j\xE4hrlich wiederkehrende Zahlungen zur ${euro(jw.minijobGrenze)}-Grenze (aufs Jahr gerechnet). Wir pr\xFCfen, ob die Grenze \xFCberschritten wird.` : `Einmalige Zahlungen k\xF6nnen bei Minijobs die Grenze von ${euro(jw.minijobGrenze)} \xFCberschreiten. Wir pr\xFCfen das.`);
+        break;
+      case "sachbezug":
+        if (e.w.art === "geschenk" && e.w.form === "geld") b("warnung", "Geldgeschenke sind immer steuer- und beitragspflichtig, auch zum Geburtstag. Der Betrag wird mit dem Lohn abgerechnet.");
+        else if (e.w.art === "geschenk" && n("betrag") > GRENZEN.geschenkFreigrenze) b("warnung", `Sachgeschenke zu pers\xF6nlichen Anl\xE4ssen sind nur bis ${euro(GRENZEN.geschenkFreigrenze)} steuerfrei. Dar\xFCber wird der gesamte Betrag versteuert.`);
+        if (e.w.art !== "geschenk") {
+          const summe = m2 ? sachbezugSumme(m2, ma) : n("betrag");
+          if (summe > GRENZEN.sachbezugFreigrenze) b("warnung", `Gutscheine und Sachbez\xFCge sind zusammen nur bis ${euro(GRENZEN.sachbezugFreigrenze)} im Monat steuerfrei (Freigrenze). Bei ${euro(summe)} wird der gesamte Betrag versteuert, nicht nur der Teil \xFCber 50 \u20AC.`);
+          if (e.w.art === "gutschein") b("info", "Steuerfrei nur, wenn der Gutschein zus\xE4tzlich zum Lohn gegeben wird und nicht in Bargeld getauscht werden kann.");
+        }
+        break;
+      case "vorschuss":
+        if (istDatum(e.w.datum) && e.w.datum > monatsLetzter(monat)) b("warnung", "Das Datum liegt nach dem Abrechnungsmonat.");
+        if (ma.lohnform === "gehalt" && ma.gehalt && n("betrag") > ma.gehalt) b("warnung", "Der Vorschuss ist h\xF6her als das Monatsgehalt.");
+        break;
+      case "austritt":
+        if (istDatum(e.w.datum) && e.w.datum < monatsErster(monat)) b("fehler", "Das Austrittsdatum liegt vor dem Abrechnungsmonat. Bitte melden Sie sich direkt bei uns.");
+        if (istDatum(e.w.datum) && e.w.datum > monatsLetzter(monat)) b("info", "Der Austritt liegt in einem sp\xE4teren Monat. Wir merken ihn vor.");
+        if (n("resturlaub") > 30) b("warnung", "Mehr als 30 offene Urlaubstage. Bitte pr\xFCfen.");
+        break;
+    }
+    return out;
+  }
+  function pruefePerson(ma, m2) {
+    const k = kontext(m2, ma);
+    const eigene = m2.eintraege.filter((e) => e.maId === ma.id);
+    const out = [];
+    const b = (stufe, text) => out.push({ stufe, text });
+    const jw = jahreswerte(m2.kopf.monat);
+    for (const e of eigene) for (const x of pruefeEintrag(e, k, m2)) out.push({ ...x, text: `${kat(e.typ).titel}: ${x.text}` });
+    const mitZeitraum = eigene.filter((e) => kat(e.typ).zeitraum && istDatum(e.w.zeitraum_von) && istDatum(e.w.zeitraum_bis));
+    for (let i = 0; i < mitZeitraum.length; i++) for (let j = i + 1; j < mitZeitraum.length; j++) {
+      const a = mitZeitraum[i], c = mitZeitraum[j];
+      if (!ueberschneiden(a.w.zeitraum_von, a.w.zeitraum_bis, c.w.zeitraum_von, c.w.zeitraum_bis)) continue;
+      const urlaubKrank = [a.typ, c.typ].includes("urlaub") && [a.typ, c.typ].includes("krank");
+      b("fehler", urlaubKrank ? "Urlaub und Krankheit \xFCberschneiden sich. Krankheitstage mit \xE4rztlicher Krankmeldung gelten nicht als Urlaub (\xA7 9 BUrlG). Bitte den Urlaub entsprechend k\xFCrzen." : `${kat(a.typ).titel} (${fmt(a.w.zeitraum_von, false)}\u2013${fmt(a.w.zeitraum_bis, false)}) und ${kat(c.typ).titel} (${fmt(c.w.zeitraum_von, false)}\u2013${fmt(c.w.zeitraum_bis, false)}) \xFCberschneiden sich.`);
+    }
+    for (const kk of KATEGORIEN.filter((x) => x.einmalig))
+      if (eigene.filter((e) => e.typ === kk.typ).length > 1) b("fehler", `\u201E${kk.titel}\u201C ist mehrfach eingetragen. Bitte zusammenfassen.`);
+    const austritt = eigene.find((e) => e.typ === "austritt")?.w.datum;
+    if (istDatum(austritt)) {
+      for (const e of mitZeitraum)
+        if (e.w.zeitraum_bis > austritt && e.w.zeitraum_von <= monatsLetzter(m2.kopf.monat)) b("fehler", `${kat(e.typ).titel} reicht \xFCber den letzten Tag (${fmt(austritt)}) hinaus.`);
+    }
+    const arbeitszeit = eigene.find((e) => e.typ === "arbeitszeit");
+    const schonWeg = istDatum(austritt) && austritt < monatsErster(m2.kopf.monat);
+    if (ma.lohnform === "stundenlohn" && !arbeitszeit && !schonWeg) {
+      const abw = mitZeitraum.length > 0;
+      b(abw ? "warnung" : "fehler", abw ? "Es fehlen die gearbeiteten Stunden. War die Person den ganzen Monat abwesend? Dann ist das in Ordnung." : "Bei Stundenlohn brauchen wir die gearbeiteten Stunden.");
+    }
+    if (ma.beschaeftigung !== "azubi") {
+      const ml = jw.werte.mindestlohn;
+      if (ma.lohnform === "stundenlohn" && ma.stundenlohn && ma.stundenlohn < ml) b("fehler", `Der Stundenlohn (${euro(ma.stundenlohn)}) liegt unter dem Mindestlohn von ${euro(ml)} (${jw.jahr}).`);
+      if (ma.lohnform === "gehalt" && ma.gehalt && ma.wochenstunden) {
+        const satz = stundensatz(ma);
+        if (satz < ml) b("warnung", `Umgerechnet ${euro(satz)} je Stunde \u2013 unter dem Mindestlohn von ${euro(ml)} (${jw.jahr}). Bitte Gehalt oder Wochenstunden pr\xFCfen.`);
+      }
+    }
+    if (ma.beschaeftigung === "minijob") {
+      const v = verdienst(m2, ma), g = jw.werte.minijobGrenze;
+      if (v > g) b("warnung", `Gesch\xE4tzter Verdienst ${euro(v)} liegt \xFCber der Minijob-Grenze von ${euro(g)}. Unvorhersehbar und h\xF6chstens in 2 Monaten im Jahr ist das erlaubt, sonst wird der Job sozialversicherungspflichtig. Wir melden uns.`);
+    }
+    if (ma.lohnform === "stundenlohn" && arbeitszeit) {
+      const soll = sollStunden(k);
+      const bezahlt = z0(arbeitszeit.w.stunden) + bezahlteAbwesenheit(m2, ma) + feiertagsverguetung(k).stunden;
+      if (soll > 0 && ma.beschaeftigung !== "minijob" && bezahlt < soll * 0.8 && !mitZeitraum.some((e) => e.typ === "unbezahlt" || e.typ === "krank"))
+        b("info", `Insgesamt ${std(bezahlt)} bezahlt bei etwa ${std(soll)} vereinbarter Zeit. Fehlt etwas?`);
+    }
+    return out;
+  }
+  function status(ma, m2) {
+    if (!m2.eintraege.some((e) => e.maId === ma.id) && !m2.erledigt[ma.id]) return "offen";
+    const bf = pruefePerson(ma, m2);
+    return bf.some((x) => x.stufe === "fehler") ? "fehler" : bf.some((x) => x.stufe === "warnung") ? "warnung" : "ok";
+  }
+  function pruefeStammdaten(d, m2) {
+    const out = [];
+    const b = (stufe, text, feld) => out.push({ stufe, text, feld });
+    const ml = jahreswerte(m2.kopf.monat).werte;
+    if (!d.name?.trim()) b("fehler", "Bitte den Namen eintragen.", "name");
+    if (!d.persNr?.trim()) b("fehler", "Bitte die Personalnummer eintragen. Sie steht auf der Lohnabrechnung.", "persNr");
+    else if (!/^\d{1,6}$/.test(d.persNr.trim())) b("fehler", "Die Personalnummer besteht nur aus Ziffern (h\xF6chstens 6).", "persNr");
+    else if (m2.mitarbeiter.some((x) => x.persNr === d.persNr.trim() && x.id !== d.id)) b("fehler", "Diese Personalnummer gibt es schon.", "persNr");
+    const h = zahl(d.stundenText);
+    if (h === void 0 || Number.isNaN(h) || h <= 0) b("fehler", "Bitte die Wochenstunden laut Vertrag eintragen.", "stunden");
+    else if (h > 48) b("warnung", "Mehr als 48 Stunden pro Woche sind nach dem Arbeitszeitgesetz im Durchschnitt nicht erlaubt.", "stunden");
+    const v = zahl(d.betragText);
+    if (v === void 0 || Number.isNaN(v) || v <= 0) b("fehler", d.lohnform === "gehalt" ? "Bitte das Monatsgehalt (brutto) eintragen." : "Bitte den Stundenlohn eintragen.", "betrag");
+    else if (d.lohnform === "stundenlohn" && v > 200) b("warnung", "Sehr hoher Stundenlohn. Ist vielleicht das Monatsgehalt gemeint?", "betrag");
+    else if (d.lohnform === "gehalt" && v < 100) b("warnung", "Sehr niedriges Monatsgehalt. Ist vielleicht der Stundenlohn gemeint?", "betrag");
+    else if (d.beschaeftigung !== "azubi" && d.lohnform === "stundenlohn" && v < ml.mindestlohn) b("fehler", `Unter dem Mindestlohn von ${euro(ml.mindestlohn)}.`, "betrag");
+    if (d.beschaeftigung === "minijob" && d.lohnform === "gehalt" && v && v > ml.minijobGrenze) b("fehler", `Ein Minijob darf h\xF6chstens ${euro(ml.minijobGrenze)} im Monat bringen.`, "betrag");
+    if (!d.arbeitstage.some(Boolean)) b("fehler", "Bitte mindestens einen Arbeitstag w\xE4hlen.", "tage");
+    if (d.eintritt && !istDatum(d.eintritt)) b("fehler", "Ung\xFCltiges Eintrittsdatum.", "eintritt");
+    if (d.eintritt && d.eintritt > monatsLetzter(m2.kopf.monat)) b("warnung", "Der Eintritt liegt nach dem Abrechnungsmonat.", "eintritt");
+    return out;
+  }
+  function meldungsBefunde(m2) {
+    const jw = jahreswerte(m2.kopf.monat);
+    return jw.geschaetzt ? [{ stufe: "warnung", text: `F\xFCr ${m2.kopf.monat.slice(0, 4)} sind noch keine Grenzwerte hinterlegt; gepr\xFCft wird mit den Werten von ${jw.jahr}.` }] : [];
+  }
+
+  // konfig/lohnarten.standard.json
+  var lohnarten_standard_default = {
+    geprueft: false,
+    hinweis: 'Beispielzuordnung. Lohnarten, Ausfallschl\xFCssel und Bearbeitungsschl\xFCssel vor dem ersten Import auf die Kanzlei-Lohnarten abstimmen, mit einem Testmandanten importieren und dann "geprueft": true setzen. Mandantenspezifische Abweichungen in konfig/mandanten/<MandantNr>.json.',
+    lodas: {
+      beraterNr: "1234567",
+      versionDb: "",
+      bs: { stunden: "1", tage: "2", betrag: "3" }
+    },
+    sbs: {
+      firmennummer: "",
+      monatsformat: "MM.JJJJ"
+    },
+    lohnarten: {
+      arbeitszeit: { text: "Arbeitsstunden", wert: "stunden", lodas: "1000", sbs: "0100" },
+      feiertag: { text: "Feiertagsstunden (\xA7 2 EFZG)", wert: "stunden", lodas: "1010", sbs: "0110", nurStundenlohn: true },
+      urlaub: { text: "Urlaubsstunden", wert: "stunden", lodas: "1100", sbs: "0200", nurStundenlohn: true },
+      krank: { text: "Krankstunden (Entgeltfortzahlung)", wert: "stunden", lodas: "1200", sbs: "0300", nurStundenlohn: true },
+      kindkrank_bezahlt: { text: "Kind krank, bezahlt (\xA7 616 BGB)", wert: "stunden", lodas: "1210", sbs: "0310", nurStundenlohn: true },
+      ueberstunden_aus: { text: "\xDCberstunden ausgezahlt", wert: "stunden", lodas: "1300", sbs: "0400" },
+      ueberstunden_konto: { text: "\xDCberstunden Zeitkonto", wert: "stunden", lodas: "1310", sbs: "0410" },
+      zuschlag_nacht: { text: "Nachtarbeit 25 % (\xA7 3b EStG)", wert: "stunden", lodas: "1400", sbs: "0500" },
+      zuschlag_nacht_0_4: { text: "Nachtarbeit 0\u20134 Uhr 40 %", wert: "stunden", lodas: "1401", sbs: "0501" },
+      zuschlag_sonntag: { text: "Sonntagsarbeit 50 %", wert: "stunden", lodas: "1410", sbs: "0510" },
+      zuschlag_feiertag: { text: "Feiertagsarbeit 125 %", wert: "stunden", lodas: "1420", sbs: "0520" },
+      zuschlag_feiertag_150: { text: "Feiertagsarbeit 150 % (24.12. ab 14 Uhr, 25./26.12., 1.5.)", wert: "stunden", lodas: "1421", sbs: "0521" },
+      einmal_praemie: { text: "Pr\xE4mie", wert: "betrag", lodas: "2000", sbs: "0600" },
+      einmal_weihnachtsgeld: { text: "Weihnachtsgeld", wert: "betrag", lodas: "2010", sbs: "0610" },
+      einmal_urlaubsgeld: { text: "Urlaubsgeld", wert: "betrag", lodas: "2020", sbs: "0620" },
+      einmal_jubilaeum: { text: "Jubil\xE4umszahlung", wert: "betrag", lodas: "2030", sbs: "0630" },
+      einmal_sonstige: { text: "Sonstige Einmalzahlung", wert: "betrag", lodas: "2090", sbs: "0690" },
+      sachbezug_gutschein: { text: "Gutschein (\xA7 8 Abs. 2 S. 11 EStG)", wert: "betrag", lodas: "2100", sbs: "0700" },
+      sachbezug_geschenk: { text: "Sachgeschenk pers\xF6nlicher Anlass", wert: "betrag", lodas: "2110", sbs: "0710" },
+      geschenk_geld: { text: "Geldgeschenk (steuerpflichtig)", wert: "betrag", lodas: "2120", sbs: "0720" },
+      sachbezug_sonstige: { text: "Sonstiger Sachbezug", wert: "betrag", lodas: "2190", sbs: "0790" },
+      vorschuss: { text: "Vorschuss (Abzug)", wert: "betrag", lodas: "3000", sbs: "0900" },
+      resturlaub_abgeltung: { text: "Urlaubsabgeltung (Tage)", wert: "tage", lodas: "2200", sbs: "0800" }
+    },
+    fehlzeiten: {
+      urlaub: { text: "Urlaub", lodas: "U", sbs: "0250" },
+      krank: { text: "Krank mit Entgeltfortzahlung", lodas: "K", sbs: "0350" },
+      krank_ohne_efz: { text: "Krank ohne Entgeltfortzahlung (Krankengeld)", lodas: "KG", sbs: "0360" },
+      kindkrank: { text: "Kind krank (Kinderkrankengeld)", lodas: "KK", sbs: "0370" },
+      kindkrank_bezahlt: { text: "Kind krank, bezahlt", lodas: "KB", sbs: "0375" },
+      unbezahlt: { text: "Unbezahlte Fehlzeit", lodas: "UF", sbs: "0380" },
+      mutterschutz: { text: "Mutterschutz", lodas: "MU", sbs: "0390" },
+      beschaeftigungsverbot: { text: "Besch\xE4ftigungsverbot", lodas: "BV", sbs: "0391" },
+      elternzeit: { text: "Elternzeit", lodas: "EZ", sbs: "0392" }
+    }
+  };
+
+  // src/export/konfig.ts
+  var STANDARD = lohnarten_standard_default;
+  function mische(basis, extra) {
+    if (!extra) return basis;
+    return {
+      ...basis,
+      ...extra,
+      lodas: { ...basis.lodas, ...extra.lodas, bs: { ...basis.lodas.bs, ...extra.lodas?.bs } },
+      sbs: { ...basis.sbs, ...extra.sbs },
+      lohnarten: { ...basis.lohnarten, ...extra.lohnarten },
+      fehlzeiten: { ...basis.fehlzeiten, ...extra.fehlzeiten }
+    };
+  }
+
+  // src/export/zeilen.ts
+  var r22 = (n) => Math.round(n * 100) / 100;
+  var nz = (s) => {
+    const n = zahl(s);
+    return n && !Number.isNaN(n) ? n : 0;
+  };
+  function erzeugeZeilen(m2) {
+    const zeilen = [];
+    const fehlzeiten = [];
+    for (const ma of m2.mitarbeiter) {
+      const k = kontext(m2, ma);
+      const add = (schluessel, bezeichnung, x = {}) => zeilen.push({ persNr: ma.persNr, name: ma.name, lohnform: ma.lohnform, schluessel, bezeichnung, hinweis: "", ...x });
+      const fz = (schluessel, von, bis) => {
+        if (!istDatum(von) || !istDatum(bis) || bis < von) return;
+        const s = schnittMitMonat(von, bis, m2.kopf.monat);
+        const at = s ? arbeitstage(s[0], s[1], ma.arbeitstage, ort(m2.kopf)).tage : 0;
+        fehlzeiten.push({ persNr: ma.persNr, name: ma.name, schluessel, von, bis, arbeitstageImMonat: at });
+      };
+      const eigene = m2.eintraege.filter((e) => e.maId === ma.id);
+      for (const e of eigene) {
+        const zr = kat(e.typ).zeitraum ? zeitraumwerte(e, k) : null;
+        const zeit = zr ? { von: e.w.zeitraum_von, bis: e.w.zeitraum_bis, tage: zr.tage, stunden: zr.stundenBezahlt } : {};
+        const n = (key) => nz(e.w[key]);
+        switch (e.typ) {
+          case "arbeitszeit":
+            add("arbeitszeit", "Gearbeitete Stunden", { stunden: n("stunden") });
+            break;
+          case "urlaub":
+            add("urlaub", "Urlaub", { ...zeit, hinweis: n("halbtage") ? `${n("halbtage")} halbe Tage` : "" });
+            fz("urlaub", e.w.zeitraum_von, e.w.zeitraum_bis);
+            break;
+          case "krank": {
+            const ohne = zr ? zr.tage - zr.tageBezahlt : 0;
+            add("krank", "Krankheit", {
+              ...zeit,
+              hinweis: [
+                e.w.au === "ja" ? "eAU abrufen" : e.w.au === "nein" ? "ohne AU" : "AU unklar",
+                e.w.unfall === "ja" ? "Arbeitsunfall" : "",
+                e.w.vorher === "ja" ? `Vorerkrankung pr\xFCfen${e.w.vorher_wann ? ` (${e.w.vorher_wann})` : ""}` : "",
+                ohne > 0 ? `${ohne} Tag(e) ohne Entgeltfortzahlung` : ""
+              ].filter(Boolean).join(", ")
+            });
+            if (istDatum(e.w.zeitraum_von) && istDatum(e.w.zeitraum_bis)) {
+              const wzEnde = ma.eintritt ? plusTage(ma.eintritt, GRENZEN.wartezeitTage - 1) : "";
+              const efzEnde = plusTage(e.w.zeitraum_von, GRENZEN.efzKalendertage - 1);
+              const art = (d) => d <= wzEnde || d > efzEnde ? "krank_ohne_efz" : "krank";
+              let start2 = e.w.zeitraum_von;
+              for (let d = start2; d <= e.w.zeitraum_bis; d = plusTage(d, 1)) {
+                const naechster = plusTage(d, 1);
+                if (naechster > e.w.zeitraum_bis || art(naechster) !== art(d)) {
+                  fz(art(d), start2, d);
+                  start2 = naechster;
+                }
+              }
+            }
+            break;
+          }
+          case "kindkrank": {
+            const bezahlt = e.w.bezahlt === "ja";
+            add(bezahlt ? "kindkrank_bezahlt" : "kindkrank", bezahlt ? "Kind krank (bezahlt)" : "Kind krank (unbezahlt)", {
+              ...zeit,
+              stunden: bezahlt ? zr?.stundenBezahlt : void 0,
+              hinweis: `Kind unter 12: ${optionText("kindkrank", "alter", e.w.alter)}; Bescheinigung: ${optionText("kindkrank", "bescheinigung", e.w.bescheinigung)}${e.w.bezahlt === "unbekannt" ? "; \xA7 616 BGB pr\xFCfen" : ""}`
+            });
+            fz(bezahlt ? "kindkrank_bezahlt" : "kindkrank", e.w.zeitraum_von, e.w.zeitraum_bis);
+            break;
+          }
+          case "unbezahlt":
+            add("unbezahlt", "Unbezahlt frei", { ...zeit, stunden: void 0, hinweis: e.w.grund || "" });
+            fz("unbezahlt", e.w.zeitraum_von, e.w.zeitraum_bis);
+            break;
+          case "mutterschutz": {
+            const art = e.w.art || "mutterschutz";
+            add(art, optionText("mutterschutz", "art", art), {
+              ...zeit,
+              stunden: void 0,
+              hinweis: istDatum(e.w.geburt) ? `Geburtstermin ${fmt(e.w.geburt)}${e.w.verlaengert === "ja" ? ", verl\xE4ngerte Schutzfrist" : ""}` : ""
+            });
+            fz(art, e.w.zeitraum_von, e.w.zeitraum_bis);
+            break;
+          }
+          case "ueberstunden":
+            add(
+              e.w.verwendung === "auszahlen" ? "ueberstunden_aus" : "ueberstunden_konto",
+              e.w.verwendung === "auszahlen" ? "\xDCberstunden ausgezahlt" : "\xDCberstunden aufs Zeitkonto",
+              { stunden: n("stunden"), hinweis: n("zuschlag") ? `Zuschlag ${n("zuschlag")} %` : "" }
+            );
+            break;
+          case "zuschlaege": {
+            const nacht = n("nacht"), n04 = n("nacht_0_4"), feier = n("feiertag"), f150 = n("feiertag_150");
+            if (nacht - n04 > 0) add("zuschlag_nacht", "Nachtarbeit 20\u20136 Uhr", { stunden: r22(nacht - n04) });
+            if (n04 > 0) add("zuschlag_nacht_0_4", "Nachtarbeit 0\u20134 Uhr (Beginn vor 0 Uhr)", { stunden: n04 });
+            if (n("sonntag") > 0) add("zuschlag_sonntag", "Sonntagsarbeit", { stunden: n("sonntag") });
+            if (feier - f150 > 0) add("zuschlag_feiertag", "Feiertagsarbeit", { stunden: r22(feier - f150) });
+            if (f150 > 0) add("zuschlag_feiertag_150", "Feiertagsarbeit 24.12./25.12./26.12./1.5.", { stunden: f150 });
+            break;
+          }
+          case "einmalzahlung":
+            add(`einmal_${e.w.art || "sonstige"}`, optionText("einmalzahlung", "art", e.w.art), { betrag: n("betrag") });
+            break;
+          case "sachbezug": {
+            const s = e.w.art === "geschenk" ? e.w.form === "geld" ? "geschenk_geld" : "sachbezug_geschenk" : e.w.art === "gutschein" ? "sachbezug_gutschein" : "sachbezug_sonstige";
+            add(s, optionText("sachbezug", "art", e.w.art), { betrag: n("betrag") });
+            break;
+          }
+          case "vorschuss":
+            add("vorschuss", "Vorschuss", { betrag: n("betrag"), von: e.w.datum });
+            break;
+          case "austritt":
+            add("info", "Austritt", { bis: e.w.datum, hinweis: optionText("austritt", "grund", e.w.grund) });
+            if (n("resturlaub") > 0) add("resturlaub_abgeltung", "Urlaubsabgeltung", { tage: n("resturlaub") });
+            break;
+          case "sonstiges":
+            add("info", "Nachricht", { hinweis: e.w.text });
+            break;
+        }
+      }
+      if (ma.lohnform === "stundenlohn") {
+        const fv = feiertagsverguetung(k);
+        if (fv.stunden > 0) add("feiertag", "Feiertagsverg\xFCtung", { tage: fv.tage.length, stunden: fv.stunden, hinweis: "automatisch: " + fv.tage.map((d) => fmt(d, false)).join(", ") });
+      }
+      if (!eigene.length && m2.erledigt[ma.id]) add("info", "Keine \xC4nderungen", { hinweis: "wie Vormonat" });
+    }
+    return { zeilen, fehlzeiten };
+  }
+
+  // src/export/cp1252.ts
+  var SONDER = {
+    8364: 128,
+    8218: 130,
+    402: 131,
+    8222: 132,
+    8230: 133,
+    8224: 134,
+    8225: 135,
+    710: 136,
+    8240: 137,
+    352: 138,
+    8249: 139,
+    338: 140,
+    381: 142,
+    8216: 145,
+    8217: 146,
+    8220: 147,
+    8221: 148,
+    8226: 149,
+    8211: 150,
+    8212: 151,
+    732: 152,
+    8482: 153,
+    353: 154,
+    8250: 155,
+    339: 156,
+    382: 158,
+    376: 159
+  };
+  function byte(cp) {
+    if (cp < 128 || cp >= 160 && cp <= 255) return cp;
+    return SONDER[cp];
+  }
+  function nur1252(s) {
+    let out = "";
+    for (const ch of s) out += byte(ch.codePointAt(0)) === void 0 ? "?" : ch;
+    return out;
+  }
+  function kodiere1252(s) {
+    const out = [];
+    for (const ch of s) out.push(byte(ch.codePointAt(0)) ?? 63);
+    return new Uint8Array(out);
+  }
+
+  // src/export/formate.ts
+  var CRLF = "\r\n";
+  var dez = (n) => n === void 0 || n === 0 ? "" : n.toFixed(2).replace(".", ",");
+  var csvFeld = (s) => /[;"\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  var ttmmjjjj = (d) => {
+    const { j, m: m2, t } = teile(d);
+    return `${p2(t)}${p2(m2)}${j}`;
+  };
+  var wertVon = (z, w) => w === "stunden" ? z.stunden : w === "tage" ? z.tage : z.betrag;
+  var datei = (m2, teil, endung) => `${(m2.kopf.mandantNr || "Mandant").replace(/[^\w-]/g, "_")}_${m2.kopf.monat}_${teil}.${endung}`;
+  function uebergabeCsv(m2, k) {
+    const { zeilen } = erzeugeZeilen(m2);
+    const [j, mo] = m2.kopf.monat.split("-");
+    const kopf = ["Mandant", "Monat", "PersNr", "Name", "Schluessel", "Bezeichnung", "LODAS-Lohnart", "SBS-Lohnart", "Von", "Bis", "Tage", "Stunden", "Betrag", "Hinweis"];
+    const zeilenText = zeilen.map((z) => {
+      const la = k.lohnarten[z.schluessel];
+      return [
+        m2.kopf.mandantNr,
+        `${mo}/${j}`,
+        z.persNr,
+        z.name,
+        z.schluessel,
+        z.bezeichnung,
+        la?.lodas ?? "",
+        la?.sbs ?? "",
+        z.von ? fmt(z.von) : "",
+        z.bis ? fmt(z.bis) : "",
+        dez(z.tage),
+        dez(z.stunden),
+        dez(z.betrag),
+        z.hinweis
+      ].map((s) => csvFeld(nur1252(String(s)))).join(";");
+    });
+    return { dateiname: datei(m2, "Uebergabe", "csv"), text: [kopf.join(";"), ...zeilenText].join(CRLF) + CRLF, probleme: [] };
+  }
+  function buchungen(zeilen, k, programm, probleme) {
+    const out = [];
+    for (const z of zeilen) {
+      if (z.schluessel === "info") continue;
+      const la = k.lohnarten[z.schluessel];
+      if (!la) {
+        if (!k.fehlzeiten[z.schluessel]) probleme.push(`${z.name}: F\xFCr \u201E${z.bezeichnung}\u201C (${z.schluessel}) ist keine Lohnart hinterlegt.`);
+        continue;
+      }
+      if (la.nurStundenlohn && z.lohnform !== "stundenlohn") continue;
+      const wert = wertVon(z, la.wert);
+      if (!wert) continue;
+      const nr = la[programm];
+      if (!nr) {
+        probleme.push(`${z.name}: F\xFCr \u201E${la.text}\u201C ist keine ${programm.toUpperCase()}-Lohnart hinterlegt.`);
+        continue;
+      }
+      out.push({ z, lohnart: nr, wertart: la.wert, wert });
+    }
+    return out;
+  }
+  function lodasAscii(m2, k) {
+    const probleme = [];
+    const { zeilen, fehlzeiten } = erzeugeZeilen(m2);
+    const [j, mo] = m2.kopf.monat.split("-");
+    const zeitraum = `01.${mo}.${j}`;
+    if (!k.lodas.beraterNr) probleme.push("Beraternummer fehlt in der Konfiguration (lodas.beraterNr).");
+    if (!/^\d{1,5}$/.test(m2.kopf.mandantNr)) probleme.push(`Mandantennummer \u201E${m2.kopf.mandantNr}\u201C ist f\xFCr LODAS ung\xFCltig (1\u20135 Ziffern).`);
+    for (const ma of m2.mitarbeiter) if (!/^\d{1,5}$/.test(ma.persNr)) probleme.push(`${ma.name}: Personalnummer \u201E${ma.persNr}\u201C ist f\xFCr LODAS ung\xFCltig (1\u20135 Ziffern).`);
+    const pnrOk = (p) => /^\d{1,5}$/.test(p);
+    const zl = ["[Allgemein]", "Version_SST=1.0"];
+    if (k.lodas.versionDb) zl.push(`Version_DB=${k.lodas.versionDb}`);
+    zl.push(
+      `BeraterNr=${k.lodas.beraterNr}`,
+      `MandantenNr=${m2.kopf.mandantNr}`,
+      "Feldtrennzeichen=;",
+      "Zahlenkomma=,",
+      "Stringbegrenzer='",
+      "Kommentarkennzeichen=*"
+    );
+    zl.push(`* Monatsmeldung ${m2.kopf.firma} \u2013 ${mo}/${j} \u2013 erzeugt ${(/* @__PURE__ */ new Date()).toLocaleString("de-DE")}`);
+    if (!k.geprueft) zl.push('* ACHTUNG: Lohnarten-Zuordnung noch nicht gepr\xFCft (konfig: "geprueft": false). Vor dem Import abgleichen.');
+    zl.push("");
+    const bu = buchungen(zeilen, k, "lodas", probleme).filter((b) => pnrOk(b.z.persNr));
+    const fz = fehlzeiten.filter((f) => pnrOk(f.persNr)).map((f) => ({ f, schl: k.fehlzeiten[f.schluessel]?.lodas }));
+    for (const x of fz) if (!x.schl) probleme.push(`${x.f.name}: F\xFCr Fehlzeit \u201E${x.f.schluessel}\u201C ist kein LODAS-Ausfallschl\xFCssel hinterlegt.`);
+    zl.push(
+      "[Satzbeschreibung]",
+      "1;u_lod_bwd_buchung_standard;abrechnung_zeitraum#bwd;bs_nr#bwd;bs_wert_butab#bwd;la_eigene#bwd;pnr#bwd;",
+      "2;u_lod_psd_fehlzeiten;pnr#psd;datum_von_ttmmjjjj#psd;datum_bis_ttmmjjjj#psd;grund_fehlzeiten#psd;",
+      ""
+    );
+    zl.push("[Bewegungsdaten]");
+    let letzte = "";
+    for (const b of bu) {
+      if (b.z.persNr !== letzte) {
+        zl.push(`* ${b.z.persNr} ${b.z.name}`);
+        letzte = b.z.persNr;
+      }
+      zl.push(`1;${zeitraum};${k.lodas.bs[b.wertart]};${dez(b.wert)};${b.lohnart};${b.z.persNr};`);
+    }
+    zl.push("");
+    const mitSchl = fz.filter((x) => x.schl);
+    if (mitSchl.length) {
+      zl.push("[Stammdaten]");
+      for (const { f, schl } of mitSchl) {
+        const grund = /^\d+$/.test(schl) ? schl : `'${schl.replace(/'/g, "")}'`;
+        zl.push(`* ${f.persNr} ${f.name}: ${k.fehlzeiten[f.schluessel].text}`);
+        zl.push(`2;${f.persNr};${ttmmjjjj(f.von)};${ttmmjjjj(f.bis)};${grund};`);
+      }
+      zl.push("");
+    }
+    const ohne = zeilen.filter((z) => z.schluessel === "info");
+    if (ohne.length) {
+      zl.push("* Hinweise ohne Buchung (siehe Hinweisliste):");
+      for (const z of ohne) zl.push(`* ${z.persNr} ${z.name}: ${z.bezeichnung}${z.hinweis ? " \u2013 " + z.hinweis : ""}`.replace(/[\r\n]+/g, " "));
+    }
+    return { dateiname: datei(m2, "LODAS", "txt"), text: nur1252(zl.join(CRLF) + CRLF), probleme };
+  }
+  var SBS_SPALTEN = ["Firma", "Personalnummer", "Abrechnungsmonat", "Lohnart", "Stunden", "Tage", "Betrag", "Von", "Bis", "Text"];
+  function sbsCsv(m2, k) {
+    const probleme = [];
+    const { zeilen, fehlzeiten } = erzeugeZeilen(m2);
+    const [j, mo] = m2.kopf.monat.split("-");
+    const monat = k.sbs.monatsformat === "JJJJMM" ? `${j}${mo}` : `${mo}.${j}`;
+    const firma = k.sbs.firmennummer || m2.kopf.mandantNr;
+    for (const ma of m2.mitarbeiter) if (!/^\d{1,6}$/.test(ma.persNr)) probleme.push(`${ma.name}: Personalnummer \u201E${ma.persNr}\u201C ist f\xFCr SBS ung\xFCltig (1\u20136 Ziffern).`);
+    const rows = [];
+    for (const b of buchungen(zeilen, k, "sbs", probleme)) {
+      rows.push([
+        firma,
+        b.z.persNr,
+        monat,
+        b.lohnart,
+        b.wertart === "stunden" ? dez(b.wert) : "",
+        b.wertart === "tage" ? dez(b.wert) : "",
+        b.wertart === "betrag" ? dez(b.wert) : "",
+        b.z.von ? fmt(b.z.von) : "",
+        b.z.bis ? fmt(b.z.bis) : "",
+        b.z.bezeichnung
+      ]);
+    }
+    for (const f of fehlzeiten) {
+      if (!schnittMitMonat(f.von, f.bis, m2.kopf.monat)) continue;
+      const la = k.fehlzeiten[f.schluessel]?.sbs;
+      if (!la) {
+        probleme.push(`${f.name}: F\xFCr Fehlzeit \u201E${f.schluessel}\u201C ist keine SBS-Lohnart hinterlegt.`);
+        continue;
+      }
+      rows.push([firma, f.persNr, monat, la, "", dez(f.arbeitstageImMonat) || "0,00", "", fmt(f.von), fmt(f.bis), k.fehlzeiten[f.schluessel].text]);
+    }
+    const text = [SBS_SPALTEN, ...rows].map((r) => r.map((s) => csvFeld(nur1252(s))).join(";")).join(CRLF) + CRLF;
+    return { dateiname: datei(m2, "SBS", "csv"), text, probleme };
+  }
+
+  // src/export/hinweise.ts
+  var nz2 = (s) => {
+    const n = zahl(s);
+    return n && !Number.isNaN(n) ? n : 0;
+  };
+  function aufgaben(m2, konfig2) {
+    const out = [];
+    const allg = (thema, text) => out.push({ persNr: "", name: "Allgemein", thema, text });
+    const jw = jahreswerte(m2.kopf.monat);
+    if (konfig2 && !konfig2.geprueft) allg("Pr\xFCfen", "Lohnarten-Zuordnung ist noch nicht gepr\xFCft. LODAS-/SBS-Datei vor dem Import abgleichen.");
+    if (jw.geschaetzt) allg("Pr\xFCfen", `F\xFCr ${m2.kopf.monat.slice(0, 4)} sind keine Grenzwerte hinterlegt (gepr\xFCft mit ${jw.jahr}).`);
+    if (m2.nachricht.trim()) allg("Info", `Nachricht des Mandanten: ${m2.nachricht.trim()}`);
+    for (const ma of m2.mitarbeiter) {
+      const k = kontext(m2, ma);
+      const a = (thema, text, frist) => out.push({ persNr: ma.persNr, name: ma.name, thema, text, frist });
+      const eigene = m2.eintraege.filter((e) => e.maId === ma.id);
+      if (ma.eintritt && ma.eintritt >= monatsErster(m2.kopf.monat) && ma.eintritt <= monatsLetzter(m2.kopf.monat))
+        a("Meldung", `Neueintritt am ${fmt(ma.eintritt)}: Personalfragebogen anfordern, Anmeldung (Abgabegrund 10), Sofortmeldung bei Branchen nach \xA7 28a Abs. 4 SGB IV pr\xFCfen.`);
+      for (const e of eigene) {
+        const zr = kat(e.typ).zeitraum ? zeitraumwerte(e, k) : null;
+        const zeit = istDatum(e.w.zeitraum_von) ? `${fmt(e.w.zeitraum_von)}\u2013${fmt(e.w.zeitraum_bis)}` : "";
+        switch (e.typ) {
+          case "krank": {
+            if (e.w.au !== "nein") a("eAU", `eAU abrufen f\xFCr ${zeit} (bei privat Versicherten Papier-AU anfordern).`);
+            else if (zr && zr.kalendertage > 3) a("Pr\xFCfen", `Krank ${zeit} ohne \xE4rztliche AU \xFCber 3 Kalendertage: Leistungsverweigerungsrecht \xA7 7 EFZG kl\xE4ren.`);
+            if (e.w.unfall === "ja") a("Meldung", `Arbeitsunfall (${zeit}): Unfallanzeige an die BG, wenn AU > 3 Kalendertage (\xA7 193 SGB VII).`, istDatum(e.w.zeitraum_von) ? `3 Tage nach Kenntnis` : void 0);
+            if (e.w.vorher === "ja" || e.w.vorher === "unbekannt") a("Pr\xFCfen", `Vorerkrankungen pr\xFCfen (Fortsetzungserkrankung, \xA7 3 Abs. 1 S. 2 EFZG)${e.w.vorher_wann ? `: lt. Mandant ${e.w.vorher_wann}` : ""}. Ggf. Vorerkrankungsanfrage an die Krankenkasse.`);
+            if (zr && zr.tageBezahlt < zr.tage) {
+              const efzEnde = plusTage(e.w.zeitraum_von, GRENZEN.efzKalendertage - 1);
+              a("Bescheinigung", `Kein Anspruch auf Entgeltfortzahlung f\xFCr ${zr.tage - zr.tageBezahlt} Arbeitstag(e) (Wartezeit oder Ende 6 Wochen am ${fmt(efzEnde)}): Entgeltbescheinigung Krankengeld (EEL) \xFCbermitteln; Unterbrechungsmeldung (Abgabegrund 51) pr\xFCfen, wenn ein voller Kalendermonat ohne Entgelt.`);
+            }
+            break;
+          }
+          case "kindkrank":
+            if (e.w.bezahlt !== "ja") a("Bescheinigung", `Kind krank ${zeit}: Entgeltbescheinigung Kinderkrankengeld (EEL) \xFCbermitteln.`);
+            if (e.w.bezahlt === "unbekannt") a("Pr\xFCfen", "Kind krank: Anspruch nach \xA7 616 BGB anhand des Arbeitsvertrags pr\xFCfen.");
+            if (e.w.alter === "nein") a("Pr\xFCfen", "Kind krank: Kind ist 12 oder \xE4lter \u2013 kein Kinderkrankengeld, Freistellung unbezahlt.");
+            break;
+          case "unbezahlt":
+            if (zr && zr.kalendertage > GRENZEN.unbezahltMaxTage && istDatum(e.w.zeitraum_von)) {
+              const ende = plusTage(e.w.zeitraum_von, GRENZEN.unbezahltMaxTage - 1);
+              a("Meldung", `Unbezahlt ${zeit}: Versicherungspflicht endet nach einem Monat (\xA7 7 Abs. 3 SGB IV) \u2013 Abmeldung (Abgabegrund 34) zum ${fmt(ende)}, Anmeldung (13) bei Wiederaufnahme.`);
+            }
+            break;
+          case "mutterschutz":
+            if (e.w.art === "mutterschutz") {
+              const f = istDatum(e.w.geburt) ? mutterschutzfristen(e.w.geburt, e.w.verlaengert === "ja") : null;
+              a("Erstattung", `Mutterschutz${f ? ` (Schutzfrist ${fmt(f.von)}\u2013${fmt(f.bis)})` : ""}: Zuschuss zum Mutterschaftsgeld berechnen, U2-Erstattung beantragen, Entgeltbescheinigung Mutterschaftsgeld, Unterbrechungsmeldung (51) pr\xFCfen.`);
+              if (e.w.verlaengert === "unbekannt") a("Pr\xFCfen", "Mutterschutz: verl\xE4ngerte Schutzfrist (Fr\xFCh-/Mehrlingsgeburt, Behinderung) kl\xE4ren.");
+            } else if (e.w.art === "beschaeftigungsverbot") {
+              a("Erstattung", `Besch\xE4ftigungsverbot ${zeit}: Attest anfordern, Mutterschutzlohn (\xA7 18 MuSchG) zahlen, U2-Erstattung beantragen.`);
+            } else {
+              a("Meldung", `Elternzeit ${zeit}: Antrag anfordern, Unterbrechungsmeldung (Abgabegrund 52) pr\xFCfen, Urlaubsk\xFCrzung (\xA7 17 BEEG) beachten.`);
+            }
+            break;
+          case "zuschlaege":
+            if (ma.lohnform === "stundenlohn" && (ma.stundenlohn || 0) > GRENZEN.grundlohn3bSv)
+              a("Pr\xFCfen", `Zuschl\xE4ge \xA7 3b EStG: Grundlohn ${euro(ma.stundenlohn)} \xFCber ${euro(GRENZEN.grundlohn3bSv)}/Std. \u2013 Zuschl\xE4ge insoweit beitragspflichtig (\xA7 1 SvEV)${(ma.stundenlohn || 0) > GRENZEN.grundlohn3bSteuer ? `, \xFCber ${euro(GRENZEN.grundlohn3bSteuer)} auch steuerpflichtig` : ""}.`);
+            break;
+          case "sachbezug":
+            if (e.w.art === "geschenk" && e.w.form === "geld") a("Pr\xFCfen", `Geldgeschenk ${euro(nz2(e.w.betrag))}: steuer- und beitragspflichtig abrechnen.`);
+            else if (e.w.art === "geschenk" && nz2(e.w.betrag) > GRENZEN.geschenkFreigrenze) a("Pr\xFCfen", `Sachgeschenk ${euro(nz2(e.w.betrag))} \xFCber ${euro(GRENZEN.geschenkFreigrenze)}: voll steuerpflichtig, ggf. Pauschalierung \xA7 37b EStG.`);
+            break;
+          case "vorschuss":
+            a("Info", `Vorschuss ${euro(nz2(e.w.betrag))} vom ${fmt(e.w.datum)} mit dem Nettolohn verrechnen.`);
+            break;
+          case "austritt": {
+            a("Meldung", `Austritt zum ${fmt(e.w.datum)}: Abmeldung (Abgabegrund 30), Arbeitsbescheinigung (BEA) an die Bundesagentur, Lohnsteuerbescheinigung.`);
+            if (nz2(e.w.resturlaub) > 0) a("Pr\xFCfen", `Urlaubsabgeltung ${nz2(e.w.resturlaub)} Tage (\xA7 7 Abs. 4 BUrlG) \u2013 Anspruch anhand Urlaubskartei pr\xFCfen.`);
+            if (istDatum(e.w.datum) && ma.eintritt && kalendertage(ma.eintritt, e.w.datum) < 183) a("Pr\xFCfen", "Austritt in den ersten 6 Monaten: nur Teilurlaub (\xA7 5 BUrlG).");
+            break;
+          }
+          case "sonstiges":
+            a("Info", `Freitext: ${e.w.text}`);
+            break;
+        }
+      }
+      const sb = sachbezugSumme(m2, ma);
+      if (sb > GRENZEN.sachbezugFreigrenze) a("Pr\xFCfen", `Sachbez\xFCge/Gutscheine zusammen ${euro(sb)} \xFCber der Freigrenze von ${euro(GRENZEN.sachbezugFreigrenze)}: voll steuer- und beitragspflichtig oder Pauschalierung \xA7 37b EStG.`);
+      if (ma.beschaeftigung === "minijob") {
+        const v = verdienst(m2, ma);
+        if (v > jw.werte.minijobGrenze) a("Pr\xFCfen", `Minijob: gesch\xE4tzter Verdienst ${euro(v)} \xFCber ${euro(jw.werte.minijobGrenze)} \u2013 Jahresbetrachtung und gelegentliches \xDCberschreiten (max. 2 Monate) pr\xFCfen.`);
+      }
+    }
+    return out;
+  }
+  function aufgabenText(m2, liste) {
+    const zl = [`Hinweise zur Monatsmeldung ${m2.kopf.firma} (Mandant ${m2.kopf.mandantNr}), ${m2.kopf.monat}`, ""];
+    let letzte = "";
+    for (const x of liste) {
+      const wer = x.persNr ? `${x.persNr} ${x.name}` : x.name;
+      if (wer !== letzte) {
+        zl.push("", wer);
+        letzte = wer;
+      }
+      zl.push(`  [ ] ${x.thema}: ${x.text}${x.frist ? ` (Frist: ${x.frist})` : ""}`);
+    }
+    if (!liste.length) zl.push("Keine besonderen Aufgaben.");
+    return nur1252(zl.join("\r\n") + "\r\n");
+  }
+
+  // src/app.ts
+  var SPEICHER = "monatsmeldung.v2";
+  var m;
+  var ansicht = "start";
+  var aktivMa = "";
+  var wz = null;
+  var stamm = null;
+  var loeschFrage = null;
+  var ergebnis = null;
+  var mitServer = false;
+  var kanzlei = "Ihr Lohnb\xFCro";
+  var konfig = STANDARD;
+  var ausgabeTab = "hinweise";
+  var neueId = () => Math.random().toString(36).slice(2, 10);
+  var esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  var $ = (sel) => document.querySelector(sel);
+  var heuteMonat = () => {
+    const d = /* @__PURE__ */ new Date();
+    return datum(d.getFullYear(), d.getMonth() + 1, 1).slice(0, 7);
+  };
+  var ctx = (ma) => kontext(m, ma);
+  var person = (id) => m.mitarbeiter.find((x) => x.id === id);
+  var ico = (pfad, cls = "ico") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${pfad}"/></svg>`;
+  var STATUS_TEXT = { offen: "Noch offen", fehler: "Bitte korrigieren", warnung: "Hinweise", ok: "Fertig" };
+  var chip = (s) => `<span class="chip chip-${s}">${STATUS_TEXT[s]}</span>`;
+  var kopfFertig = () => !!(m.kopf.firma.trim() && m.kopf.mandantNr.trim() && m.kopf.monat);
+  function beispieldaten() {
+    const monat = heuteMonat();
+    const tag = (t) => `${monat}-${String(t).padStart(2, "0")}`;
+    const mofr = [true, true, true, true, true, false, false];
+    return {
+      kopf: { mandantNr: "20417", firma: "Fischr\xE4ucherei Beispiel GmbH", ansprechpartner: "", monat, land: "SH", regionen: [] },
+      mitarbeiter: [
+        { id: "m1", persNr: "1001", name: "Anna Petersen", beschaeftigung: "vollzeit", lohnform: "gehalt", gehalt: 3450, wochenstunden: 40, arbeitstage: mofr, beispiel: true },
+        { id: "m2", persNr: "1002", name: "Jonas Bruhn", beschaeftigung: "teilzeit", lohnform: "stundenlohn", stundenlohn: 16.5, wochenstunden: 24, arbeitstage: [true, true, true, false, false, false, false], beispiel: true },
+        { id: "m3", persNr: "1003", name: "Mira Lorenzen", beschaeftigung: "minijob", lohnform: "stundenlohn", stundenlohn: 14, wochenstunden: 10, arbeitstage: [false, false, false, true, true, false, false], beispiel: true },
+        { id: "m4", persNr: "1004", name: "Tim Hansen", beschaeftigung: "vollzeit", lohnform: "gehalt", gehalt: 3100, wochenstunden: 40, arbeitstage: mofr, beispiel: true }
+      ],
+      eintraege: [
+        { id: neueId(), maId: "m1", typ: "urlaub", w: { zeitraum_von: tag(12), zeitraum_bis: tag(16) } },
+        { id: neueId(), maId: "m3", typ: "arbeitszeit", w: { stunden: "46" } },
+        { id: neueId(), maId: "m4", typ: "krank", w: { zeitraum_von: tag(5), zeitraum_bis: tag(9), au: "ja", unfall: "nein", vorher: "nein" } },
+        { id: neueId(), maId: "m4", typ: "einmalzahlung", w: { art: "praemie", betrag: "250" } }
+      ],
+      erledigt: {},
+      hinweiseGelesen: false,
+      nachricht: ""
+    };
+  }
+  function laden() {
+    var _a;
+    try {
+      const roh = localStorage.getItem(SPEICHER) ?? localStorage.getItem("monatsmeldung.v1");
+      if (roh) {
+        const x = JSON.parse(roh);
+        m = x.m;
+        ansicht = x.ansicht || "start";
+        aktivMa = x.aktivMa || "";
+        (_a = m.kopf).regionen ?? (_a.regionen = []);
+        return;
+      }
+    } catch {
+    }
+    m = beispieldaten();
+  }
+  function speichern() {
+    try {
+      localStorage.setItem(SPEICHER, JSON.stringify({ m, ansicht: ansicht === "fertig" ? "pruefen" : ansicht, aktivMa }));
+    } catch {
+    }
+  }
+  function befundListe(bf, leer = "") {
+    if (!bf.length) return leer;
+    const rang = { fehler: 0, warnung: 1, info: 2 };
+    return `<ul class="befunde">${[...bf].sort((a, b) => rang[a.stufe] - rang[b.stufe]).map((b) => `<li class="bf bf-${b.stufe}"><span class="bf-marke">${b.stufe === "fehler" ? "Fehler" : b.stufe === "warnung" ? "Achtung" : "Info"}</span><span>${esc(b.text)}</span></li>`).join("")}</ul>`;
+  }
+  function wochentageText(t) {
+    if (t.slice(0, 5).every(Boolean) && !t[5] && !t[6]) return "Mo\u2013Fr";
+    return WT_KURZ.filter((_, i) => t[i]).join(", ") || "keine Tage";
+  }
+  function maZeile(ma) {
+    const geld = ma.lohnform === "gehalt" ? `Gehalt ${euro(ma.gehalt || 0)}` : `${euro(ma.stundenlohn || 0)} je Std.`;
+    return `${BESCHAEFTIGUNG[ma.beschaeftigung]} \xB7 ${geld} \xB7 ${ma.wochenstunden.toLocaleString("de-DE")} Std./Woche \xB7 ${wochentageText(ma.arbeitstage)}`;
+  }
+  function eintragKurz(e, ma) {
+    const k = kat(e.typ), w = e.w;
+    const opt = (key) => k.felder.find((f) => f.key === key)?.optionen?.find((o) => o.wert === w[key])?.text;
+    const n = (key) => zahl(w[key]) || 0;
+    if (k.zeitraum) {
+      const zr = zeitraumwerte(e, ctx(ma));
+      const teile2 = [`${fmt(w.zeitraum_von, false)}\u2013${fmt(w.zeitraum_bis, false)}`];
+      if (zr) teile2.push(`${zr.tage.toLocaleString("de-DE")} Arbeitstag${zr.tage === 1 ? "" : "e"}`, std(zr.stunden));
+      if (e.typ === "mutterschutz") teile2.unshift(opt("art") || "");
+      if (e.typ === "krank") {
+        teile2.push(w.au === "ja" ? "mit Krankmeldung" : w.au === "nein" ? "ohne Krankmeldung" : "Krankmeldung unklar");
+        if (zr && zr.tageBezahlt < zr.tage) teile2.push(`${zr.tage - zr.tageBezahlt} Tag(e) ohne Lohnfortzahlung`);
+      }
+      return teile2.filter(Boolean).join(" \xB7 ");
+    }
+    switch (e.typ) {
+      case "arbeitszeit":
+        return std(n("stunden"));
+      case "ueberstunden":
+        return `${std(n("stunden"))} \xB7 ${opt("verwendung")}`;
+      case "zuschlaege":
+        return [["nacht", "nachts"], ["sonntag", "sonntags"], ["feiertag", "feiertags"]].filter(([key]) => n(key)).map(([key, t]) => `${std(n(key))} ${t}`).join(" \xB7 ");
+      case "einmalzahlung":
+      case "sachbezug":
+        return `${opt("art")}${w.form === "geld" ? " (Geld)" : ""} \xB7 ${euro(n("betrag"))}`;
+      case "vorschuss":
+        return `${euro(n("betrag"))} am ${fmt(w.datum)}`;
+      case "austritt":
+        return `Letzter Tag ${fmt(w.datum)} \xB7 ${opt("grund")}`;
+      case "sonstiges":
+        return (w.text || "").length > 80 ? w.text.slice(0, 80) + " \u2026" : w.text;
+    }
+    return "";
+  }
+  function kopfleiste() {
+    const schritte = [["start", "Firma & Monat"], ["personen", "Mitarbeitende"], ["pruefen", "Pr\xFCfen & senden"]];
+    const aktiv = ansicht === "fertig" ? 3 : schritte.findIndex(([a]) => a === ansicht);
+    return `<header class="kopfbar"><div class="kopf-innen">
+    <div class="marke"><span class="marke-zeichen" aria-hidden="true">${ico("M4 4h16v16H4zM4 9h16M9 4v16")}</span>
+      <div><div class="marke-name">Monatsmeldung</div><div class="marke-sub">f\xFCr ${esc(kanzlei)}${m.kopf.firma ? ` \xB7 ${esc(m.kopf.firma)}` : ""}</div></div></div>
+    <nav class="stepper" aria-label="Fortschritt">${schritte.map(([ziel, text], i) => `<button class="st ${i === aktiv ? "st-aktiv" : ""} ${i < aktiv ? "st-fertig" : ""}" data-a="gehe" data-ziel="${ziel}" ${i > aktiv && !kopfFertig() ? "disabled" : ""} ${i === aktiv ? 'aria-current="step"' : ""}>
+        <span class="st-nr">${i < aktiv ? "\u2713" : i + 1}</span><span class="st-text">${text}</span></button>`).join('<span class="st-linie"></span>')}</nav>
+    <div class="monat-pille" title="Abrechnungsmonat">${monatsName(m.kopf.monat)}</div>
+  </div></header>`;
+  }
+  function seiteStart() {
+    const monate = [];
+    for (let i = -3; i <= 1; i++) monate.push(monatPlus(heuteMonat(), i));
+    if (!monate.includes(m.kopf.monat)) monate.unshift(m.kopf.monat);
+    const fehlt = [!m.kopf.firma.trim() && "Firmenname", !m.kopf.mandantNr.trim() && "Mandantennummer"].filter(Boolean);
+    const regionen = Object.keys(REGIONEN).filter((r) => REGIONEN[r].land === m.kopf.land);
+    return `<main class="seite seite-schmal"><section class="karte start">
+    <p class="eyebrow">Schritt 1 von 3</p>
+    <h1>F\xFCr welchen Monat melden Sie?</h1>
+    <p class="lead">Sie gehen gleich Person f\xFCr Person durch und tippen an, was im Monat passiert ist. Wir fragen nur, was wir f\xFCr die Lohnabrechnung brauchen, und pr\xFCfen Ihre Angaben sofort.</p>
+    <div class="formgrid">
+      <label class="feld"><span>Abrechnungsmonat</span>
+        <select id="k-monat" data-k="monat">${monate.map((x) => `<option value="${x}" ${x === m.kopf.monat ? "selected" : ""}>${monatsName(x)}</option>`).join("")}</select></label>
+      <label class="feld"><span>Bundesland des Betriebs</span>
+        <select id="k-land" data-k="land">${Object.entries(LAENDER).map(([k, n]) => `<option value="${k}" ${k === m.kopf.land ? "selected" : ""}>${n}</option>`).join("")}</select>
+        <small>F\xFCr die Feiertage. Ma\xDFgeblich ist der Ort, an dem gearbeitet wird.</small></label>
+      ${regionen.length ? `<fieldset class="feld feld-breit"><legend>Gibt es bei Ihnen zus\xE4tzliche \xF6rtliche Feiertage?</legend>
+        ${regionen.map((r) => `<label class="check"><input type="checkbox" data-a="region" data-r="${r}" ${m.kopf.regionen.includes(r) ? "checked" : ""}><span>${esc(REGIONEN[r].text)}<br><small class="leise">${esc(REGIONEN[r].hilfe)}</small></span></label>`).join("")}
+      </fieldset>` : ""}
+      <label class="feld"><span>Firmenname</span><input id="k-firma" data-k="firma" value="${esc(m.kopf.firma)}" autocomplete="organization"></label>
+      <label class="feld"><span>Ihre Mandantennummer</span><input id="k-mandant" data-k="mandantNr" value="${esc(m.kopf.mandantNr)}" inputmode="numeric"><small>Steht auf jeder Lohnabrechnung oben rechts.</small></label>
+      <label class="feld feld-breit"><span>Ihr Name (f\xFCr R\xFCckfragen)</span><input id="k-ap" data-k="ansprechpartner" value="${esc(m.kopf.ansprechpartner)}" autocomplete="name" placeholder="optional"></label>
+    </div>
+    ${feiertagsZeile()}
+    <div class="aktionen">
+      ${fehlt.length ? `<span class="leise">Noch n\xF6tig: ${fehlt.join(", ")}</span>` : ""}
+      <button class="btn btn-haupt" data-a="gehe" data-ziel="personen" ${fehlt.length ? "disabled" : ""}>Weiter zu den Mitarbeitenden</button>
+    </div>
+  </section>
+  ${m.mitarbeiter.some((x) => x.beispiel) ? '<p class="beispiel-hinweis">Diese Demo startet mit Beispieldaten (erfundene Firma und Personen). <button class="link" data-a="leeren">Alles leeren und neu beginnen</button></p>' : ""}
+  </main>`;
+  }
+  function feiertagsZeile() {
+    const liste = [];
+    for (const d of tageVonBis(monatsErster(m.kopf.monat), monatsLetzter(m.kopf.monat))) {
+      const f = feiertag(d, m.kopf.land, m.kopf.regionen);
+      if (f) liste.push(`${f} (${WT_KURZ[wochentag(d)]}, ${fmt(d, false)})`);
+    }
+    const mn = MONATE[teile(monatsErster(m.kopf.monat)).m - 1];
+    return `<p class="feiertage">${liste.length ? `Feiertage im ${mn}: ${esc(liste.join(", "))}` : `Im ${monatsName(m.kopf.monat)} gibt es in ${LAENDER[m.kopf.land]} keinen gesetzlichen Feiertag.`}</p>`;
+  }
+  function seitePersonen() {
+    if (!m.mitarbeiter.length) return `<main class="seite seite-schmal"><section class="karte leer">
+    <h1>Noch keine Mitarbeitenden</h1><p class="lead">Legen Sie die Personen an, die Sie in diesem Monat bezahlen. Das geht schnell und muss nur einmal gemacht werden.</p>
+    <button class="btn btn-haupt" data-a="ma-neu">Person hinzuf\xFCgen</button></section></main>`;
+    if (!person(aktivMa)) aktivMa = m.mitarbeiter[0].id;
+    const fertig = m.mitarbeiter.filter((x) => ["ok", "warnung"].includes(status(x, m))).length;
+    return `<main class="seite personen">
+    <aside class="liste" aria-label="Mitarbeitende">
+      <div class="liste-kopf"><h2>Mitarbeitende</h2><span class="zaehler">${fertig} von ${m.mitarbeiter.length} fertig</span></div>
+      <div class="fortschritt"><span style="width:${fertig / m.mitarbeiter.length * 100}%"></span></div>
+      <ul>${m.mitarbeiter.map((x) => {
+      const s = status(x, m);
+      return `<li><button class="person ${x.id === aktivMa ? "person-aktiv" : ""}" data-a="ma-waehle" data-id="${x.id}" ${x.id === aktivMa ? 'aria-current="true"' : ""}>
+        <span class="punkt punkt-${s}" aria-hidden="true"></span>
+        <span class="person-text"><span class="person-name">${esc(x.name)}</span><span class="person-sub">Nr. ${esc(x.persNr)} \xB7 ${BESCHAEFTIGUNG[x.beschaeftigung]}</span></span>
+        <span class="sr">${STATUS_TEXT[s]}</span></button></li>`;
+    }).join("")}</ul>
+      <button class="btn btn-zart voll" data-a="ma-neu">+ Person hinzuf\xFCgen</button>
+      <button class="btn btn-haupt voll" data-a="gehe" data-ziel="pruefen">Alles pr\xFCfen und senden</button>
+    </aside>
+    <section class="detail">${detail(person(aktivMa))}</section>
+  </main>`;
+  }
+  var KUERZEL = { urlaub: "U", krank: "K", kindkrank: "KK", unbezahlt: "UF", mutterschutz: "M" };
+  function monatsleiste(ma) {
+    const [j, mo] = m.kopf.monat.split("-").map(Number);
+    const n = tageImMonat(j, mo);
+    const zr = m.eintraege.filter((e) => e.maId === ma.id && kat(e.typ).zeitraum && istDatum(e.w.zeitraum_von) && istDatum(e.w.zeitraum_bis));
+    const austritt = m.eintraege.find((e) => e.maId === ma.id && e.typ === "austritt")?.w.datum;
+    let html = "";
+    for (let t = 1; t <= n; t++) {
+      const d = datum(j, mo, t), wt = wochentag(d), ft = feiertag(d, m.kopf.land, m.kopf.regionen);
+      const hier = zr.filter((e) => d >= e.w.zeitraum_von && d <= e.w.zeitraum_bis);
+      const typ = hier[0]?.typ;
+      const cls = [
+        "tag",
+        ma.arbeitstage[wt] ? "" : "tag-frei",
+        ft ? "tag-feiertag" : "",
+        typ ? `tag-${typ}` : "",
+        hier.length > 1 ? "tag-konflikt" : "",
+        ma.eintritt && d < ma.eintritt || austritt && d > austritt ? "tag-aus" : ""
+      ].filter(Boolean).join(" ");
+      const titel = [`${WT_KURZ[wt]} ${fmt(d)}`, ft, ...hier.map((e) => kat(e.typ).titel), ma.arbeitstage[wt] ? "" : "kein Arbeitstag"].filter(Boolean).join(" \xB7 ");
+      html += `<div class="${cls}" title="${esc(titel)}"><span class="tag-wt">${WT_KURZ[wt]}</span><span class="tag-nr">${t}</span><span class="tag-k">${hier.length > 1 ? "!" : typ ? KUERZEL[typ] : ft ? "F" : ""}</span></div>`;
+    }
+    return `<div class="leiste-wrap"><div class="leiste" style="--tage:${n}" role="img" aria-label="Monats\xFCbersicht ${esc(ma.name)}">${html}</div>
+    <div class="legende"><span><i class="lg lg-urlaub"></i>Urlaub</span><span><i class="lg lg-krank"></i>Krank</span><span><i class="lg lg-kindkrank"></i>Kind krank</span><span><i class="lg lg-unbezahlt"></i>Unbezahlt / Elternzeit</span><span><i class="lg lg-feiertag"></i>Feiertag</span><span><i class="lg lg-frei"></i>Kein Arbeitstag</span></div></div>`;
+  }
+  function detail(ma) {
+    const eigene = m.eintraege.filter((e) => e.maId === ma.id);
+    const bf = pruefePerson(ma, m);
+    const vorname = ma.name.split(" ")[0];
+    const mn = MONATE[teile(monatsErster(m.kopf.monat)).m - 1];
+    const naechste = m.mitarbeiter[m.mitarbeiter.findIndex((x) => x.id === ma.id) + 1];
+    const k = ctx(ma);
+    const fv = ma.lohnform === "stundenlohn" ? feiertagsverguetung(k) : null;
+    const fehltStunden = ma.lohnform === "stundenlohn" && !eigene.some((e) => e.typ === "arbeitszeit");
+    const kats = KATEGORIEN.filter((x) => !x.nurStundenlohn || ma.lohnform === "stundenlohn");
+    return `<div class="detail-kopf">
+      <div><h1>${esc(ma.name)}</h1><p class="sub">Pers.-Nr. ${esc(ma.persNr)} \xB7 ${esc(maZeile(ma))}</p></div>
+      <div class="detail-kopf-r">${chip(status(ma, m))}<button class="btn btn-klein" data-a="ma-bearbeiten" data-id="${ma.id}">Stammdaten</button></div>
+    </div>
+    ${monatsleiste(ma)}
+    <div class="frage-block">
+      <h2>Was war im ${mn} bei ${esc(vorname)}?</h2>
+      <p class="leise">Tippen Sie an, was zutrifft. Sie k\xF6nnen mehrere Dinge nacheinander eintragen.${ma.lohnform === "gehalt" ? " Das Gehalt l\xE4uft automatisch \u2013 melden Sie nur, was davon abweicht." : ""}</p>
+      ${GRUPPEN.map(([g, titel]) => `<div class="gruppe"><h3>${titel}</h3><div class="kacheln">${kats.filter((x) => x.gruppe === g).map((x) => {
+      const anzahl = eigene.filter((e) => e.typ === x.typ).length;
+      const pflicht = x.typ === "arbeitszeit" && fehltStunden;
+      return `<button class="kachel ${pflicht ? "kachel-pflicht" : ""}" data-a="wz-start" data-typ="${x.typ}">
+          ${ico(x.symbol, "kachel-ico")}
+          <span class="kachel-titel">${esc(x.titel)}${anzahl ? `<span class="kachel-zahl">${anzahl}</span>` : ""}</span>
+          <span class="kachel-text">${esc(x.kurz)}</span>${pflicht ? '<span class="kachel-marke">Bitte eintragen</span>' : ""}</button>`;
+    }).join("")}</div></div>`).join("")}
+    </div>
+    <div class="eintraege">
+      <h2>Eingetragen f\xFCr ${mn}</h2>
+      ${eigene.length ? `<ul class="eintrag-liste">${eigene.map((e) => {
+      const eb = pruefeEintrag(e, k, m);
+      const s = eb.some((x) => x.stufe === "fehler") ? "fehler" : eb.some((x) => x.stufe === "warnung") ? "warnung" : "ok";
+      return `<li class="eintrag">
+          <span class="eintrag-ico eintrag-${e.typ}">${ico(kat(e.typ).symbol)}</span>
+          <div class="eintrag-text"><strong>${esc(kat(e.typ).titel)}</strong><span>${esc(eintragKurz(e, ma))}</span></div>
+          <span class="punkt punkt-${s}" title="${s === "ok" ? "In Ordnung" : s === "fehler" ? "Fehler" : "Hinweis"}"></span>
+          <div class="eintrag-akt"><button class="btn btn-klein" data-a="wz-bearbeiten" data-id="${e.id}">\xC4ndern</button>
+          ${loeschFrage === e.id ? `<button class="btn btn-klein btn-gefahr" data-a="loeschen" data-id="${e.id}">Wirklich l\xF6schen</button><button class="btn btn-klein" data-a="loeschen-nein">Nein</button>` : `<button class="btn btn-klein btn-leise" data-a="loeschen-frage" data-id="${e.id}" aria-label="Eintrag l\xF6schen">L\xF6schen</button>`}</div></li>`;
+    }).join("")}</ul>` : '<p class="leer-text">Noch nichts eingetragen.</p>'}
+      ${fv && fv.tage.length ? `<p class="auto">Automatisch ber\xFCcksichtigt: ${fv.tage.length} Feiertag(e) mit ${std(fv.stunden)} (${fv.tage.map((d) => fmt(d, false)).join(", ")}). Feiertage werden bezahlt, auch ohne Arbeit.</p>` : ""}
+      ${ma.beschaeftigung === "minijob" ? `<p class="auto">Gesch\xE4tzter Verdienst im Monat: <strong>${euro(verdienst(m, ma))}</strong> (Grenze ${euro(jahreswerte(m.kopf.monat).werte.minijobGrenze)}).</p>` : ""}
+    </div>
+    ${bf.length ? `<div class="pruef-block"><h2>Pr\xFCfung</h2>${befundListe(bf)}</div>` : ""}
+    <div class="detail-fuss">
+      ${eigene.length ? "<span></span>" : `<label class="check"><input type="checkbox" id="erl-${ma.id}" data-a="erledigt" data-id="${ma.id}" ${m.erledigt[ma.id] ? "checked" : ""}>
+        <span>Bei ${esc(vorname)} gab es nichts Besonderes. ${ma.lohnform === "gehalt" ? "Gehalt wie immer." : ""}</span></label>`}
+      ${naechste ? `<button class="btn btn-haupt" data-a="ma-waehle" data-id="${naechste.id}">Weiter zu ${esc(naechste.name.split(" ")[0])}</button>` : '<button class="btn btn-haupt" data-a="gehe" data-ziel="pruefen">Alles pr\xFCfen und senden</button>'}
+    </div>`;
+  }
+  function seitePruefen() {
+    const { zeilen } = erzeugeZeilen(m);
+    const liste = m.mitarbeiter.map((ma) => ({ ma, s: status(ma, m), bf: pruefePerson(ma, m) }));
+    const offen = liste.filter((x) => x.s === "fehler" || x.s === "offen");
+    const warnungen = liste.some((x) => x.bf.some((b) => b.stufe === "warnung"));
+    const senden2 = !offen.length && m.mitarbeiter.length > 0 && (!warnungen || m.hinweiseGelesen);
+    return `<main class="seite seite-mittel"><section class="karte">
+    <p class="eyebrow">Schritt 3 von 3</p>
+    <h1>Alles pr\xFCfen und an ${esc(kanzlei)} senden</h1>
+    <p class="lead">${offen.length ? `Bei ${offen.length} ${offen.length === 1 ? "Person fehlt" : "Personen fehlt"} noch etwas. Tippen Sie auf den Namen, um es zu erg\xE4nzen.` : "Alle Personen sind bearbeitet. Bitte lesen Sie die Hinweise und senden Sie dann ab."}</p>
+    ${befundListe(meldungsBefunde(m))}
+    <div class="tabelle-wrap"><table class="uebersicht">
+      <thead><tr><th>Person</th><th>Gemeldet</th><th>Status</th></tr></thead>
+      <tbody>${liste.map(({ ma, s, bf }) => {
+      const eigene = m.eintraege.filter((e) => e.maId === ma.id);
+      return `<tr><td><button class="link" data-a="ma-waehle" data-id="${ma.id}">${esc(ma.name)}</button><div class="leise">Nr. ${esc(ma.persNr)}</div></td>
+          <td>${eigene.length ? `<ul class="mini">${eigene.map((e) => `<li><strong>${esc(kat(e.typ).titel)}:</strong> ${esc(eintragKurz(e, ma))}</li>`).join("")}</ul>` : m.erledigt[ma.id] ? "Keine \xC4nderungen" : '<span class="leise">\u2013</span>'}
+          ${bf.length ? befundListe(bf) : ""}</td><td>${chip(s)}</td></tr>`;
+    }).join("")}</tbody></table></div>
+    <label class="feld feld-breit"><span>Nachricht an uns (optional)</span>
+      <textarea id="nachricht" data-k="nachricht" rows="3" placeholder="z. B. Herr Hansen bekommt ab n\xE4chstem Monat mehr Gehalt.">${esc(m.nachricht)}</textarea></label>
+    ${warnungen ? `<label class="check"><input type="checkbox" id="gelesen" data-a="gelesen" ${m.hinweiseGelesen ? "checked" : ""}><span>Ich habe die Hinweise gelesen. Offene Punkte kl\xE4ren wir bei Bedarf mit Ihnen.</span></label>` : ""}
+    <details class="vorschau"><summary>So kommt die Meldung bei uns an (${zeilen.length} Zeilen)</summary>
+      <div class="tabelle-wrap">${zeilenTabelle(zeilen)}</div></details>
+    <div class="aktionen">
+      <button class="btn" data-a="gehe" data-ziel="personen">Zur\xFCck</button>
+      <button class="btn btn-haupt" data-a="senden" ${senden2 ? "" : "disabled"}>Meldung f\xFCr ${monatsName(m.kopf.monat)} senden</button>
+    </div>
+  </section></main>`;
+  }
+  function zeilenTabelle(zeilen) {
+    const f = (n) => n ? n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
+    return `<table class="zeilen"><thead><tr><th>Pers.-Nr.</th><th>Name</th><th>Was</th><th>Von</th><th>Bis</th><th class="r">Tage</th><th class="r">Std.</th><th class="r">Betrag</th><th>Hinweis</th></tr></thead>
+    <tbody>${zeilen.map((z) => `<tr><td>${esc(z.persNr)}</td><td>${esc(z.name)}</td><td>${esc(z.bezeichnung)}</td><td>${z.von ? fmt(z.von, false) : ""}</td><td>${z.bis ? fmt(z.bis, false) : ""}</td>
+      <td class="r">${f(z.tage)}</td><td class="r">${f(z.stunden)}</td><td class="r">${f(z.betrag)}</td><td>${esc(z.hinweis)}</td></tr>`).join("")}</tbody></table>`;
+  }
+  function paket() {
+    const liste = aufgaben(m, konfig);
+    return {
+      lodas: lodasAscii(m, konfig),
+      sbs: sbsCsv(m, konfig),
+      csv: uebergabeCsv(m, konfig),
+      liste,
+      hinweise: { dateiname: `${m.kopf.mandantNr}_${m.kopf.monat}_Hinweise.txt`, text: aufgabenText(m, liste), probleme: [] }
+    };
+  }
+  function seiteFertig() {
+    const e = ergebnis, p = paket();
+    const probleme = [.../* @__PURE__ */ new Set([...p.lodas.probleme, ...p.sbs.probleme])];
+    const tabs = [
+      ["hinweise", `Hinweisliste (${p.liste.length})`, p.hinweise],
+      ["lodas", "DATEV LODAS", p.lodas],
+      ["sbs", "SBS Lohn", p.sbs],
+      ["csv", "\xDCbergabe-CSV", p.csv],
+      ["json", "JSON", null]
+    ];
+    const aktiv = tabs.find(([id]) => id === ausgabeTab) ?? tabs[0];
+    const inhalt = aktiv[0] === "hinweise" ? aufgabenHtml(p.liste) : aktiv[0] === "json" ? `<pre class="code">${esc(JSON.stringify(m, null, 2))}</pre>` : `<pre class="code">${esc(aktiv[2].text)}</pre>`;
+    return `<main class="seite seite-mittel"><section class="karte fertig">
+    <div class="haken" aria-hidden="true">${ico("M5 12.5 10 17 19 7")}</div>
+    <h1>${e.ok ? "Danke, Ihre Meldung ist da." : "Demo: Meldung erstellt"}</h1>
+    <p class="lead">${esc(e.text)}</p>
+    ${e.ablage?.length ? `<p class="leise">Gespeichert: ${e.ablage.map((d) => `<code>${esc(d)}</code>`).join(", ")}</p>` : ""}
+    ${mitServer ? "" : `
+    <h2>F\xFCr das Lohnb\xFCro</h2>
+    <p class="leise">Diese Ansicht sieht der Mandant im Echtbetrieb nicht. Die Dateien werden in Windows-1252 mit CRLF gespeichert, wie LODAS und SBS sie erwarten.</p>
+    ${!konfig.geprueft ? befundListe([{ stufe: "warnung", text: 'Lohnarten-Zuordnung ist ein Beispiel (konfig/lohnarten.standard.json, "geprueft": false). Vor dem ersten echten Import abstimmen und mit einem Testmandanten importieren.' }]) : ""}
+    ${probleme.length ? befundListe(probleme.map((t) => ({ stufe: "fehler", text: t }))) : ""}
+    <div class="segment" role="tablist">${tabs.map(([id, text]) => `<button type="button" role="tab" class="seg ${id === aktiv[0] ? "seg-an" : ""}" aria-selected="${id === aktiv[0]}" data-a="tab" data-tab="${id}">${text}</button>`).join("")}</div>
+    <div class="code-kopf"><span class="leise">${aktiv[2] ? esc(aktiv[2].dateiname) : "Vollst\xE4ndige Meldung mit allen Antworten"}</span>
+      <span><button class="btn btn-klein" data-a="kopieren">Kopieren</button> ${aktiv[2] ? `<button class="btn btn-klein btn-zart" data-a="download" data-tab="${aktiv[0]}">Herunterladen</button>` : ""}</span></div>
+    <div id="ausgabe">${inhalt}</div>`}
+    <div class="aktionen"><button class="btn" data-a="gehe" data-ziel="pruefen">Zur\xFCck zur \xDCbersicht</button>
+      <button class="btn btn-haupt" data-a="neuer-monat">N\xE4chsten Monat beginnen</button></div>
+  </section></main>`;
+  }
+  function aufgabenHtml(liste) {
+    if (!liste.length) return '<p class="alles-ok">Keine besonderen Aufgaben.</p>';
+    return `<div class="tabelle-wrap"><table><thead><tr><th>Person</th><th>Thema</th><th>Aufgabe</th></tr></thead><tbody>${liste.map((a) => `<tr><td>${esc(a.persNr ? `${a.persNr} ${a.name}` : a.name)}</td><td><span class="chip chip-offen">${esc(a.thema)}</span></td><td>${esc(a.text)}${a.frist ? `<div class="leise">Frist: ${esc(a.frist)}</div>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  var wzFelder = () => sichtbareFelder(kat(wz.typ), wz.w, ctx(person(aktivMa)));
+  var hatWert = (f) => f.art === "zeitraum" ? !!(wz.w[`${f.key}_von`] || wz.w[`${f.key}_bis`]) : !!(wz.w[f.key] ?? "").trim();
+  function dialogAssistent() {
+    const a = wz, k = kat(a.typ), ma = person(aktivMa), felder = wzFelder();
+    const zus = a.schritt >= felder.length, f = felder[a.schritt];
+    return `<div class="overlay" data-a="wz-hintergrund"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="wz-titel">
+    <div class="dlg-kopf"><span class="dlg-ico">${ico(k.symbol)}</span>
+      <div><div class="eyebrow">${esc(ma.name)} \xB7 ${monatsName(m.kopf.monat)}</div><h2 id="wz-titel">${esc(k.titel)}</h2></div>
+      <button class="x" data-a="wz-zu" aria-label="Schlie\xDFen">${ico("M6 6l12 12M18 6 6 18")}</button></div>
+    <div class="schrittbalken" aria-hidden="true">${Array.from({ length: felder.length + 1 }, (_, i) => `<span class="${i < a.schritt ? "sb-fertig" : i === a.schritt ? "sb-aktiv" : ""}"></span>`).join("")}</div>
+    <p class="schritt-text">${zus ? "Zusammenfassung" : `Frage ${a.schritt + 1} von ${felder.length}`}</p>
+    <div class="dlg-inhalt">${zus ? zusammenfassung() : frage(f)}</div>
+    <div class="dlg-fuss"><button class="btn" data-a="wz-zurueck">${a.schritt === 0 ? "Abbrechen" : "Zur\xFCck"}</button>
+      ${zus ? speichernKnopf() : `<button class="btn btn-haupt" data-a="wz-weiter">${!f.pflicht && !hatWert(f) ? "\xDCberspringen" : "Weiter"}</button>`}</div>
+  </div></div>`;
+  }
+  function frage(f) {
+    const w = wz.w, id = `wz-${f.key}`;
+    let eingabe = "";
+    switch (f.art) {
+      case "zeitraum":
+        eingabe = kalender(f);
+        break;
+      case "auswahl":
+        eingabe = `<div class="optionen" role="radiogroup" aria-labelledby="frage">${f.optionen.map((o) => `<button type="button" class="option ${w[f.key] === o.wert ? "option-an" : ""}" role="radio" aria-checked="${w[f.key] === o.wert}" data-a="wz-option" data-key="${f.key}" data-wert="${o.wert}">
+        <span class="radio" aria-hidden="true"></span><span><span class="option-text">${esc(o.text)}</span>${o.hilfe ? `<span class="option-hilfe">${esc(o.hilfe)}</span>` : ""}</span></button>`).join("")}</div>`;
+        break;
+      case "datum":
+        eingabe = `<input class="gross" type="date" id="${id}" data-f="${f.key}" value="${esc(w[f.key] || "")}">`;
+        break;
+      case "text":
+        eingabe = `<textarea class="gross" id="${id}" data-f="${f.key}" rows="4">${esc(w[f.key] || "")}</textarea>`;
+        break;
+      default: {
+        const einheit = f.art === "stunden" ? "Stunden" : f.art === "betrag" ? "\u20AC" : "";
+        eingabe = `<div class="zahl-eingabe"><input class="gross" id="${id}" data-f="${f.key}" inputmode="decimal" autocomplete="off" value="${esc(w[f.key] || "")}" placeholder="${f.art === "betrag" ? "0,00" : "0"}">${einheit ? `<span class="einheit">${einheit}</span>` : ""}</div>`;
+        if (wz.typ === "arbeitszeit") eingabe += `<p class="leise">Zum Vergleich: Laut Vertrag sind es etwa ${std(sollStunden(ctx(person(aktivMa))))} in diesem Monat.</p>`;
+      }
+    }
+    return `<h3 class="frage" id="frage">${esc(f.frage)}${f.pflicht ? "" : ' <span class="optional">optional</span>'}</h3>
+    ${f.hilfe ? `<p class="hilfe">${esc(f.hilfe)}</p>` : ""}
+    <div class="eingabe">${eingabe}</div><div id="wz-live" aria-live="polite">${liveBefunde(f)}</div>`;
+  }
+  function liveBefunde(f) {
+    const ma = person(aktivMa);
+    let bf = pruefeFeld(f, wz.w, ctx(ma));
+    if (!wz.zeigeFehler) bf = bf.filter((b) => b.stufe !== "fehler" || hatWert(f));
+    let rechnung = "";
+    if (f.art === "zeitraum") {
+      const zr = zeitraumwerte({ id: "", maId: ma.id, typ: wz.typ, w: wz.w }, ctx(ma));
+      if (zr && !bf.some((b) => b.stufe === "fehler")) rechnung = `<div class="rechnung"><span><strong>${zr.kalendertage}</strong> Kalendertag${zr.kalendertage === 1 ? "" : "e"}</span><span><strong>${zr.tage.toLocaleString("de-DE")}</strong> Arbeitstag${zr.tage === 1 ? "" : "e"} im Monat</span><span><strong>${std(zr.stunden)}</strong> (${std(stundenJeTag(ma))} je Tag)</span></div>`;
+    }
+    return rechnung + befundListe(bf);
+  }
+  function kalender(f) {
+    const a = wz, ma = person(aktivMa);
+    const von = a.w[`${f.key}_von`], bis = a.w[`${f.key}_bis`];
+    const [j, mo] = a.kalMonat.split("-").map(Number);
+    const andere = m.eintraege.filter((e) => e.maId === ma.id && e.id !== a.eintragId && kat(e.typ).zeitraum && istDatum(e.w.zeitraum_von) && istDatum(e.w.zeitraum_bis));
+    let raster = "";
+    for (let i = 0; i < wochentag(datum(j, mo, 1)); i++) raster += '<span class="kz kz-leer"></span>';
+    for (let t = 1; t <= tageImMonat(j, mo); t++) {
+      const d = datum(j, mo, t), wt = wochentag(d), ft = feiertag(d, m.kopf.land, m.kopf.regionen);
+      const belegt = andere.find((e) => d >= e.w.zeitraum_von && d <= e.w.zeitraum_bis);
+      const an = istDatum(von) && d >= von && d <= (istDatum(bis) ? bis : von);
+      const cls = [
+        "kz",
+        ma.arbeitstage[wt] ? "" : "kz-frei",
+        ft ? "kz-feiertag" : "",
+        belegt ? `kz-belegt kz-${belegt.typ}` : "",
+        an ? "kz-an" : "",
+        d === von ? "kz-start" : "",
+        d === (bis || von) ? "kz-ende" : "",
+        d.slice(0, 7) !== m.kopf.monat ? "kz-fremd" : ""
+      ].filter(Boolean).join(" ");
+      const titel = [fmt(d), ft, belegt ? `bereits: ${kat(belegt.typ).titel}` : "", ma.arbeitstage[wt] ? "" : "kein Arbeitstag"].filter(Boolean).join(" \xB7 ");
+      raster += `<button type="button" class="${cls}" data-a="kal-tag" data-d="${d}" data-key="${f.key}" title="${esc(titel)}" aria-label="${esc(titel)}" aria-pressed="${an}">${t}${ft ? '<i class="kz-punkt"></i>' : ""}</button>`;
+    }
+    const kal = (n) => monatPlus(a.kalMonat, n), grenze = (n) => monatPlus(m.kopf.monat, n);
+    const hinweis = istDatum(von) ? !istDatum(bis) || bis === von ? "Jetzt auf den letzten Tag tippen (oder Weiter, wenn es nur ein Tag war)." : "Zum Neu-W\xE4hlen wieder auf den ersten Tag tippen." : "Tippen Sie auf den ersten Tag.";
+    return `<div class="kalender">
+    <div class="kal-kopf"><button type="button" class="btn btn-klein" data-a="kal-monat" data-m="${kal(-1)}" ${kal(-1) < grenze(-2) ? "disabled" : ""} aria-label="Vormonat">\u2039</button>
+      <strong>${monatsName(a.kalMonat)}</strong>
+      <button type="button" class="btn btn-klein" data-a="kal-monat" data-m="${kal(1)}" ${kal(1) > grenze(2) ? "disabled" : ""} aria-label="Folgemonat">\u203A</button></div>
+    <div class="kal-raster">${WT_KURZ.map((x) => `<span class="kal-wt">${x}</span>`).join("")}${raster}</div>
+    <p class="kal-hinweis">${hinweis}</p>
+    <div class="kal-eingaben">
+      <label class="feld"><span>Erster Tag</span><input type="date" id="wz-${f.key}-von" data-f="${f.key}_von" value="${esc(von || "")}"></label>
+      <label class="feld"><span>Letzter Tag</span><input type="date" id="wz-${f.key}-bis" data-f="${f.key}_bis" value="${esc(bis || "")}"></label></div>
+    <div class="kal-legende"><span><i class="lg lg-frei"></i>kein Arbeitstag</span><span><i class="lg lg-feiertag"></i>Feiertag</span>${andere.length ? '<span><i class="lg lg-belegt"></i>schon eingetragen</span>' : ""}</div>
+  </div>`;
+  }
+  function entwurf() {
+    const ma = person(aktivMa);
+    const felder = sichtbareFelder(kat(wz.typ), wz.w, ctx(ma));
+    const erlaubt = new Set(felder.flatMap((f) => f.art === "zeitraum" ? [`${f.key}_von`, `${f.key}_bis`] : [f.key]));
+    const w = {};
+    for (const [key, v] of Object.entries(wz.w)) if (erlaubt.has(key) && v !== "") w[key] = v.trim();
+    if (w.zeitraum_von && !w.zeitraum_bis) w.zeitraum_bis = w.zeitraum_von;
+    return { id: wz.eintragId || "neu", maId: aktivMa, typ: wz.typ, w };
+  }
+  function entwurfBefunde() {
+    const e = entwurf(), ma = person(aktivMa);
+    const probe = { ...m, eintraege: [...m.eintraege.filter((x) => x.id !== e.id), e] };
+    const quer = pruefePerson(ma, probe).filter((b) => /überschneiden|mehrfach|reicht über/.test(b.text));
+    return [...pruefeEintrag(e, kontext(probe, ma), probe), ...quer];
+  }
+  function zusammenfassung() {
+    const ma = person(aktivMa), e = entwurf();
+    const zeilen = wzFelder().map((f) => {
+      const v = e.w[f.key];
+      const text = f.art === "zeitraum" ? `${fmt(e.w[`${f.key}_von`])} bis ${fmt(e.w[`${f.key}_bis`])}` : f.art === "auswahl" ? f.optionen.find((o) => o.wert === v)?.text || "\u2013" : f.art === "datum" ? fmt(v) : f.art === "betrag" ? v ? euro(zahl(v) || 0) : "\u2013" : f.art === "stunden" ? v ? std(zahl(v) || 0) : "\u2013" : v || "\u2013";
+      return `<div class="zf-zeile"><dt>${esc(f.frage)}</dt><dd>${esc(text)}</dd></div>`;
+    });
+    const zr = kat(e.typ).zeitraum ? zeitraumwerte(e, ctx(ma)) : null;
+    const mn = MONATE[teile(monatsErster(m.kopf.monat)).m - 1];
+    return `<h3 class="frage">Stimmt das so?</h3>
+    <dl class="zf">${zeilen.join("")}
+      ${zr ? `<div class="zf-zeile zf-rechnung"><dt>Daraus berechnet</dt><dd>${zr.tage.toLocaleString("de-DE")} Arbeitstage \xB7 ${std(zr.stunden)} im ${mn}</dd></div>` : ""}</dl>
+    ${befundListe(entwurfBefunde(), '<p class="alles-ok">Keine Auff\xE4lligkeiten.</p>')}`;
+  }
+  function speichernKnopf() {
+    const f = entwurfBefunde().some((b) => b.stufe === "fehler");
+    return `<button class="btn btn-haupt" data-a="wz-speichern" ${f ? "disabled" : ""}>${f ? "Bitte erst korrigieren" : "Speichern"}</button>`;
+  }
+  function assistentStarten(typ, eintrag) {
+    if (!eintrag && kat(typ).einmalig) eintrag = m.eintraege.find((e) => e.maId === aktivMa && e.typ === typ);
+    wz = { typ, eintragId: eintrag?.id, schritt: 0, w: { ...eintrag?.w || {} }, kalMonat: (eintrag?.w.zeitraum_von || m.kopf.monat).slice(0, 7), zeigeFehler: false };
+    render();
+    fokus();
+  }
+  function weiter() {
+    const a = wz, felder = wzFelder(), f = felder[a.schritt];
+    if (f) {
+      if (f.art === "zeitraum" && a.w[`${f.key}_von`] && !a.w[`${f.key}_bis`]) a.w[`${f.key}_bis`] = a.w[`${f.key}_von`];
+      if (pruefeFeld(f, a.w, ctx(person(aktivMa))).some((b) => b.stufe === "fehler")) {
+        a.zeigeFehler = true;
+        const live = $("#wz-live");
+        if (live) live.innerHTML = liveBefunde(f);
+        else render();
+        $("#wz-live .bf-fehler")?.scrollIntoView({ block: "nearest" });
+        return;
+      }
+    }
+    a.schritt = Math.min(a.schritt + 1, wzFelder().length);
+    a.zeigeFehler = false;
+    render();
+    fokus();
+  }
+  function eintragSpeichern() {
+    if (entwurfBefunde().some((b) => b.stufe === "fehler")) return;
+    const e = entwurf();
+    if (wz.eintragId) m.eintraege = m.eintraege.map((x) => x.id === e.id ? e : x);
+    else m.eintraege.push({ ...e, id: neueId() });
+    delete m.erledigt[aktivMa];
+    m.hinweiseGelesen = false;
+    wz = null;
+    render();
+    toast(`${kat(e.typ).titel} gespeichert`);
+  }
+  function fokus() {
+    $(".dlg-inhalt input:not([type=date]), .dlg-inhalt textarea, .dlg-inhalt .option, .dlg-inhalt .kz:not(.kz-leer)")?.focus({ preventScroll: true });
+  }
+  function dialogStamm() {
+    const s = stamm, d = s.daten;
+    const bf = pruefeStammdaten(d, m);
+    const sichtbar = s.zeigeFehler ? bf : bf.filter((b) => b.stufe !== "fehler");
+    const am = (feld) => befundListe(sichtbar.filter((b) => b.feld === feld));
+    return `<div class="overlay" data-a="ma-hintergrund"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ma-titel">
+    <div class="dlg-kopf"><div><div class="eyebrow">Stammdaten</div><h2 id="ma-titel">${s.neu ? "Person hinzuf\xFCgen" : esc(d.name)}</h2></div>
+      <button class="x" data-a="ma-zu" aria-label="Schlie\xDFen">${ico("M6 6l12 12M18 6 6 18")}</button></div>
+    <div class="dlg-inhalt">
+      <div class="formgrid">
+        <label class="feld"><span>Vor- und Nachname</span><input id="ma-name" data-m="name" value="${esc(d.name || "")}">${am("name")}</label>
+        <label class="feld"><span>Personalnummer</span><input id="ma-persnr" data-m="persNr" value="${esc(d.persNr || "")}" inputmode="numeric">${am("persNr")}</label>
+      </div>
+      <fieldset class="feld"><legend>Art der Besch\xE4ftigung</legend><div class="segment">${Object.keys(BESCHAEFTIGUNG).map((b) => `<button type="button" class="seg ${d.beschaeftigung === b ? "seg-an" : ""}" aria-pressed="${d.beschaeftigung === b}" data-a="ma-wert" data-key="beschaeftigung" data-wert="${b}">${BESCHAEFTIGUNG[b]}</button>`).join("")}</div></fieldset>
+      <fieldset class="feld"><legend>Wie wird bezahlt?</legend><div class="segment">
+        <button type="button" class="seg ${d.lohnform === "gehalt" ? "seg-an" : ""}" aria-pressed="${d.lohnform === "gehalt"}" data-a="ma-wert" data-key="lohnform" data-wert="gehalt">Festes Monatsgehalt</button>
+        <button type="button" class="seg ${d.lohnform === "stundenlohn" ? "seg-an" : ""}" aria-pressed="${d.lohnform === "stundenlohn"}" data-a="ma-wert" data-key="lohnform" data-wert="stundenlohn">Nach Stunden</button></div></fieldset>
+      <div class="formgrid">
+        <label class="feld"><span>${d.lohnform === "gehalt" ? "Monatsgehalt brutto" : "Stundenlohn brutto"}</span><div class="zahl-eingabe"><input id="ma-betrag" data-m="betragText" inputmode="decimal" value="${esc(d.betragText || "")}"><span class="einheit">\u20AC</span></div>${am("betrag")}</label>
+        <label class="feld"><span>Stunden pro Woche laut Vertrag</span><div class="zahl-eingabe"><input id="ma-std" data-m="stundenText" inputmode="decimal" value="${esc(d.stundenText || "")}"><span class="einheit">Std.</span></div>${am("stunden")}</label>
+      </div>
+      <fieldset class="feld"><legend>An welchen Tagen wird normalerweise gearbeitet?</legend>
+        <div class="wochentage">${WT_KURZ.map((x, i) => `<button type="button" class="wt ${d.arbeitstage[i] ? "wt-an" : ""}" aria-pressed="${!!d.arbeitstage[i]}" data-a="ma-tag" data-i="${i}">${x}</button>`).join("")}</div>
+        <small>Wichtig f\xFCr die Berechnung von Urlaubs- und Krankheitstagen.</small>${am("tage")}</fieldset>
+      <label class="feld"><span>Eintrittsdatum (nur bei neuen Personen)</span><input type="date" id="ma-eintritt" data-m="eintritt" value="${esc(d.eintritt || "")}">${am("eintritt")}</label>
+      ${s.neu ? '<p class="leise">F\xFCr neue Personen brauchen wir zus\xE4tzlich den Personalfragebogen. Wir senden ihn Ihnen zu.</p>' : ""}
+    </div>
+    <div class="dlg-fuss">
+      ${s.neu ? '<button class="btn" data-a="ma-zu">Abbrechen</button>' : loeschFrage === d.id ? '<button class="btn btn-gefahr" data-a="ma-loeschen">Person und Eintr\xE4ge l\xF6schen</button>' : `<button class="btn btn-leise" data-a="loeschen-frage" data-id="${d.id}">Person l\xF6schen</button>`}
+      <button class="btn btn-haupt" data-a="ma-speichern">${s.neu ? "Hinzuf\xFCgen" : "Speichern"}</button>
+    </div></div></div>`;
+  }
+  function stammOeffnen(ma) {
+    loeschFrage = null;
+    stamm = ma ? { neu: false, zeigeFehler: false, daten: { ...ma, arbeitstage: [...ma.arbeitstage], betragText: String(ma.lohnform === "gehalt" ? ma.gehalt : ma.stundenlohn).replace(".", ","), stundenText: String(ma.wochenstunden).replace(".", ",") } } : { neu: true, zeigeFehler: false, daten: { id: neueId(), beschaeftigung: "vollzeit", lohnform: "gehalt", arbeitstage: [true, true, true, true, true, false, false] } };
+    render();
+    fokus();
+  }
+  function stammSpeichern() {
+    const s = stamm;
+    if (pruefeStammdaten(s.daten, m).some((b) => b.stufe === "fehler")) {
+      s.zeigeFehler = true;
+      render();
+      return;
+    }
+    const d = s.daten, betrag = zahl(d.betragText);
+    const ma = {
+      id: d.id,
+      name: d.name.trim(),
+      persNr: d.persNr.trim(),
+      beschaeftigung: d.beschaeftigung,
+      lohnform: d.lohnform,
+      wochenstunden: zahl(d.stundenText),
+      arbeitstage: d.arbeitstage,
+      eintritt: d.eintritt || void 0,
+      ...d.lohnform === "gehalt" ? { gehalt: betrag } : { stundenlohn: betrag }
+    };
+    if (s.neu) m.mitarbeiter.push(ma);
+    else m.mitarbeiter = m.mitarbeiter.map((x) => x.id === ma.id ? ma : x);
+    if (ma.lohnform !== "stundenlohn") m.eintraege = m.eintraege.filter((e) => !(e.maId === ma.id && e.typ === "arbeitszeit"));
+    aktivMa = ma.id;
+    stamm = null;
+    if (ansicht === "start") ansicht = "personen";
+    render();
+    toast(s.neu ? `${ma.name} hinzugef\xFCgt` : "Stammdaten gespeichert");
+  }
+  var toastTimer = 0;
+  function toast(text) {
+    let t = $("#toast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "toast";
+      t.setAttribute("role", "status");
+      document.body.appendChild(t);
+    }
+    t.textContent = text;
+    t.classList.add("toast-an");
+    clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => t.classList.remove("toast-an"), 2200);
+  }
+  function herunterladen(a) {
+    const url = URL.createObjectURL(new Blob([kodiere1252(a.text)], { type: "text/plain;charset=windows-1252" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = a.dateiname;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1e3);
+  }
+  async function senden() {
+    const p = paket();
+    if (mitServer) {
+      try {
+        const antwort = await fetch("api/meldung", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            meldung: m,
+            zeilen: erzeugeZeilen(m),
+            aufgaben: p.liste,
+            erstellt: (/* @__PURE__ */ new Date()).toISOString(),
+            dateien: [p.csv, p.lodas, p.sbs, p.hinweise].map((x) => ({ name: x.dateiname, text: x.text }))
+          })
+        });
+        const j = await antwort.json();
+        ergebnis = antwort.ok ? { ok: true, text: `Wir haben die Meldung f\xFCr ${monatsName(m.kopf.monat)} erhalten und melden uns bei R\xFCckfragen.`, ablage: j.dateien } : { ok: false, text: j.fehler || "Senden fehlgeschlagen. Bitte versuchen Sie es erneut." };
+      } catch {
+        ergebnis = { ok: false, text: "Keine Verbindung zum Server. Ihre Eingaben sind gespeichert \u2013 bitte sp\xE4ter erneut senden." };
+      }
+      if (!ergebnis.ok) {
+        toast(ergebnis.text);
+        return;
+      }
+    } else {
+      ergebnis = { ok: false, text: "In dieser Demo wird nichts \xFCbertragen. Unten sehen Sie, was beim Lohnb\xFCro ankommt: Hinweisliste, LODAS- und SBS-Importdatei. Mit dem mitgelieferten Python-Server werden die Dateien direkt im Eingangsordner gespeichert." };
+    }
+    ansicht = "fertig";
+    render();
+    window.scrollTo({ top: 0 });
+  }
+  function neuerMonat() {
+    m = { ...m, kopf: { ...m.kopf, monat: monatPlus(m.kopf.monat, 1) }, eintraege: [], erledigt: {}, hinweiseGelesen: false, nachricht: "" };
+    ergebnis = null;
+    ansicht = "personen";
+    aktivMa = m.mitarbeiter[0]?.id || "";
+    render();
+  }
+  function render() {
+    const seite = ansicht === "start" ? seiteStart() : ansicht === "personen" ? seitePersonen() : ansicht === "pruefen" ? seitePruefen() : seiteFertig();
+    $("#app").innerHTML = kopfleiste() + seite + (wz ? dialogAssistent() : "") + (stamm ? dialogStamm() : "");
+    document.body.classList.toggle("modal-offen", !!(wz || stamm));
+    speichern();
+  }
+  document.addEventListener("click", async (ev) => {
+    const el = ev.target.closest("[data-a]");
+    if (!el || el.disabled) return;
+    const a = el.dataset.a;
+    if ((a === "wz-hintergrund" || a === "ma-hintergrund") && ev.target !== el) return;
+    const d = el.dataset;
+    switch (a) {
+      case "gehe":
+        if (d.ziel !== "start" && !kopfFertig()) return;
+        ansicht = d.ziel;
+        loeschFrage = null;
+        render();
+        window.scrollTo({ top: 0 });
+        break;
+      case "leeren":
+        m = { kopf: { mandantNr: "", firma: "", ansprechpartner: "", monat: heuteMonat(), land: m.kopf.land, regionen: [] }, mitarbeiter: [], eintraege: [], erledigt: {}, hinweiseGelesen: false, nachricht: "" };
+        render();
+        break;
+      case "region": {
+        const r = d.r;
+        m.kopf.regionen = el.checked ? [.../* @__PURE__ */ new Set([...m.kopf.regionen, r])] : m.kopf.regionen.filter((x) => x !== r);
+        m.hinweiseGelesen = false;
+        render();
+        break;
+      }
+      case "ma-waehle":
+        aktivMa = d.id;
+        ansicht = "personen";
+        loeschFrage = null;
+        render();
+        $(".detail")?.scrollIntoView({ block: "start", behavior: "smooth" });
+        break;
+      case "ma-neu":
+        stammOeffnen();
+        break;
+      case "ma-bearbeiten":
+        stammOeffnen(person(d.id));
+        break;
+      case "ma-zu":
+      case "ma-hintergrund":
+        stamm = null;
+        loeschFrage = null;
+        render();
+        break;
+      case "ma-wert":
+        stamm.daten[d.key] = d.wert;
+        render();
+        break;
+      case "ma-tag":
+        stamm.daten.arbeitstage[+d.i] = !stamm.daten.arbeitstage[+d.i];
+        render();
+        break;
+      case "ma-speichern":
+        stammSpeichern();
+        break;
+      case "ma-loeschen": {
+        const id = stamm.daten.id;
+        m.mitarbeiter = m.mitarbeiter.filter((x) => x.id !== id);
+        m.eintraege = m.eintraege.filter((e) => e.maId !== id);
+        stamm = null;
+        loeschFrage = null;
+        aktivMa = m.mitarbeiter[0]?.id || "";
+        render();
+        toast("Person gel\xF6scht");
+        break;
+      }
+      case "erledigt":
+        m.erledigt[d.id] = !!el.checked;
+        render();
+        break;
+      case "gelesen":
+        m.hinweiseGelesen = !!el.checked;
+        render();
+        break;
+      case "wz-start":
+        assistentStarten(d.typ);
+        break;
+      case "wz-bearbeiten": {
+        const e = m.eintraege.find((x) => x.id === d.id);
+        if (e) assistentStarten(e.typ, e);
+        break;
+      }
+      case "wz-zu":
+      case "wz-hintergrund":
+        wz = null;
+        render();
+        break;
+      case "wz-weiter":
+        weiter();
+        break;
+      case "wz-zurueck":
+        if (wz.schritt === 0) wz = null;
+        else {
+          wz.schritt--;
+          wz.zeigeFehler = false;
+        }
+        render();
+        fokus();
+        break;
+      case "wz-option":
+        wz.w[d.key] = d.wert;
+        render();
+        $(".option-an")?.focus();
+        break;
+      case "wz-speichern":
+        eintragSpeichern();
+        break;
+      case "kal-monat":
+        wz.kalMonat = d.m;
+        render();
+        break;
+      case "kal-tag": {
+        const key = d.key, tag = d.d, w = wz.w, von = w[`${key}_von`], bis = w[`${key}_bis`];
+        if (!von || bis && bis !== von) {
+          w[`${key}_von`] = tag;
+          w[`${key}_bis`] = tag;
+        } else if (tag < von) {
+          w[`${key}_von`] = tag;
+          w[`${key}_bis`] = von;
+        } else w[`${key}_bis`] = tag;
+        render();
+        $(`[data-d="${tag}"]`)?.focus();
+        break;
+      }
+      case "loeschen-frage":
+        loeschFrage = d.id;
+        render();
+        break;
+      case "loeschen-nein":
+        loeschFrage = null;
+        render();
+        break;
+      case "loeschen":
+        m.eintraege = m.eintraege.filter((e) => e.id !== d.id);
+        loeschFrage = null;
+        render();
+        toast("Eintrag gel\xF6scht");
+        break;
+      case "senden":
+        await senden();
+        break;
+      case "neuer-monat":
+        neuerMonat();
+        break;
+      case "tab":
+        ausgabeTab = d.tab;
+        render();
+        break;
+      case "download": {
+        const p = paket();
+        const x = { hinweise: p.hinweise, lodas: p.lodas, sbs: p.sbs, csv: p.csv }[d.tab];
+        if (x) herunterladen(x);
+        break;
+      }
+      case "kopieren": {
+        const pre = $("#ausgabe");
+        try {
+          await navigator.clipboard.writeText(pre?.innerText || "");
+          toast("Kopiert");
+        } catch {
+          const r = document.createRange();
+          r.selectNodeContents(pre);
+          const s = getSelection();
+          s.removeAllRanges();
+          s.addRange(r);
+          toast("Markiert \u2013 mit Strg+C kopieren");
+        }
+        break;
+      }
+    }
+  });
+  document.addEventListener("input", (ev) => {
+    const t = ev.target;
+    if (t.dataset.k) {
+      const key = t.dataset.k;
+      if (key === "nachricht") {
+        m.nachricht = t.value;
+        speichern();
+        return;
+      }
+      if (key === "land") {
+        m.kopf.land = t.value;
+        m.kopf.regionen = [];
+        m.hinweiseGelesen = false;
+        render();
+        return;
+      }
+      m.kopf[key] = t.value;
+      if (key === "monat") {
+        m.hinweiseGelesen = false;
+        render();
+        return;
+      }
+      speichern();
+      const knopf = $('.start [data-ziel="personen"]');
+      if (knopf) knopf.disabled = !kopfFertig();
+      return;
+    }
+    if (t.dataset.f && wz) {
+      wz.w[t.dataset.f] = t.value;
+      const f = wzFelder()[wz.schritt];
+      if (t.type === "date") return;
+      const live = $("#wz-live");
+      if (live && f) live.innerHTML = liveBefunde(f);
+      const knopf = $('[data-a="wz-weiter"]');
+      if (knopf && f) knopf.textContent = !f.pflicht && !hatWert(f) ? "\xDCberspringen" : "Weiter";
+      return;
+    }
+    if (t.dataset.m && stamm) stamm.daten[t.dataset.m] = t.value;
+  });
+  document.addEventListener("change", (ev) => {
+    const t = ev.target;
+    if (t.dataset.f && wz && t.type === "date") {
+      wz.w[t.dataset.f] = t.value;
+      if (istDatum(t.value)) wz.kalMonat = t.value.slice(0, 7);
+      render();
+      document.getElementById(t.id)?.focus();
+    }
+    if (t.dataset.m && stamm) {
+      const id = t.id;
+      render();
+      document.getElementById(id)?.focus();
+    }
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && (wz || stamm)) {
+      wz = null;
+      stamm = null;
+      render();
+      return;
+    }
+    const t = ev.target;
+    if (ev.key === "Enter" && t.tagName === "INPUT" && wz) {
+      ev.preventDefault();
+      weiter();
+    } else if (ev.key === "Enter" && t.tagName === "INPUT" && stamm) {
+      ev.preventDefault();
+      stammSpeichern();
+    }
+  });
+  async function start() {
+    laden();
+    try {
+      const r = await fetch("api/status", { cache: "no-store" });
+      if (r.ok) {
+        const s = await r.json();
+        mitServer = !!s.server;
+        if (s.kanzlei) kanzlei = s.kanzlei;
+      }
+    } catch {
+      mitServer = false;
+    }
+    if (mitServer && m.kopf.mandantNr) {
+      try {
+        const r = await fetch(`api/konfig?mandant=${encodeURIComponent(m.kopf.mandantNr)}`, { cache: "no-store" });
+        if (r.ok) konfig = mische(STANDARD, await r.json());
+      } catch {
+      }
+    }
+    render();
+  }
+  start();
+  window.__monatsmeldung = { get m() {
+    return m;
+  }, ort: () => ort(m.kopf) };
+})();
+
+</script>
+</body>
+</html>

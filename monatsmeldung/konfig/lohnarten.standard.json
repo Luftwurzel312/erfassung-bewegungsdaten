@@ -1,0 +1,49 @@
+{
+  "geprueft": false,
+  "hinweis": "Beispielzuordnung. Lohnarten, Ausfallschlüssel und Bearbeitungsschlüssel vor dem ersten Import auf die Kanzlei-Lohnarten abstimmen, mit einem Testmandanten importieren und dann \"geprueft\": true setzen. Mandantenspezifische Abweichungen in konfig/mandanten/<MandantNr>.json.",
+  "lodas": {
+    "beraterNr": "1234567",
+    "versionDb": "",
+    "bs": { "stunden": "1", "tage": "2", "betrag": "3" }
+  },
+  "sbs": {
+    "firmennummer": "",
+    "monatsformat": "MM.JJJJ"
+  },
+  "lohnarten": {
+    "arbeitszeit":           { "text": "Arbeitsstunden",                  "wert": "stunden", "lodas": "1000", "sbs": "0100" },
+    "feiertag":              { "text": "Feiertagsstunden (§ 2 EFZG)",     "wert": "stunden", "lodas": "1010", "sbs": "0110", "nurStundenlohn": true },
+    "urlaub":                { "text": "Urlaubsstunden",                  "wert": "stunden", "lodas": "1100", "sbs": "0200", "nurStundenlohn": true },
+    "krank":                 { "text": "Krankstunden (Entgeltfortzahlung)","wert": "stunden", "lodas": "1200", "sbs": "0300", "nurStundenlohn": true },
+    "kindkrank_bezahlt":     { "text": "Kind krank, bezahlt (§ 616 BGB)", "wert": "stunden", "lodas": "1210", "sbs": "0310", "nurStundenlohn": true },
+    "ueberstunden_aus":      { "text": "Überstunden ausgezahlt",          "wert": "stunden", "lodas": "1300", "sbs": "0400" },
+    "ueberstunden_konto":    { "text": "Überstunden Zeitkonto",           "wert": "stunden", "lodas": "1310", "sbs": "0410" },
+    "zuschlag_nacht":        { "text": "Nachtarbeit 25 % (§ 3b EStG)",    "wert": "stunden", "lodas": "1400", "sbs": "0500" },
+    "zuschlag_nacht_0_4":    { "text": "Nachtarbeit 0–4 Uhr 40 %",        "wert": "stunden", "lodas": "1401", "sbs": "0501" },
+    "zuschlag_sonntag":      { "text": "Sonntagsarbeit 50 %",             "wert": "stunden", "lodas": "1410", "sbs": "0510" },
+    "zuschlag_feiertag":     { "text": "Feiertagsarbeit 125 %",           "wert": "stunden", "lodas": "1420", "sbs": "0520" },
+    "zuschlag_feiertag_150": { "text": "Feiertagsarbeit 150 % (24.12. ab 14 Uhr, 25./26.12., 1.5.)", "wert": "stunden", "lodas": "1421", "sbs": "0521" },
+    "einmal_praemie":        { "text": "Prämie",                          "wert": "betrag",  "lodas": "2000", "sbs": "0600" },
+    "einmal_weihnachtsgeld": { "text": "Weihnachtsgeld",                  "wert": "betrag",  "lodas": "2010", "sbs": "0610" },
+    "einmal_urlaubsgeld":    { "text": "Urlaubsgeld",                     "wert": "betrag",  "lodas": "2020", "sbs": "0620" },
+    "einmal_jubilaeum":      { "text": "Jubiläumszahlung",                "wert": "betrag",  "lodas": "2030", "sbs": "0630" },
+    "einmal_sonstige":       { "text": "Sonstige Einmalzahlung",          "wert": "betrag",  "lodas": "2090", "sbs": "0690" },
+    "sachbezug_gutschein":   { "text": "Gutschein (§ 8 Abs. 2 S. 11 EStG)","wert": "betrag", "lodas": "2100", "sbs": "0700" },
+    "sachbezug_geschenk":    { "text": "Sachgeschenk persönlicher Anlass","wert": "betrag",  "lodas": "2110", "sbs": "0710" },
+    "geschenk_geld":         { "text": "Geldgeschenk (steuerpflichtig)",  "wert": "betrag",  "lodas": "2120", "sbs": "0720" },
+    "sachbezug_sonstige":    { "text": "Sonstiger Sachbezug",             "wert": "betrag",  "lodas": "2190", "sbs": "0790" },
+    "vorschuss":             { "text": "Vorschuss (Abzug)",               "wert": "betrag",  "lodas": "3000", "sbs": "0900" },
+    "resturlaub_abgeltung":  { "text": "Urlaubsabgeltung (Tage)",         "wert": "tage",    "lodas": "2200", "sbs": "0800" }
+  },
+  "fehlzeiten": {
+    "urlaub":                { "text": "Urlaub",                          "lodas": "U",  "sbs": "0250" },
+    "krank":                 { "text": "Krank mit Entgeltfortzahlung",    "lodas": "K",  "sbs": "0350" },
+    "krank_ohne_efz":        { "text": "Krank ohne Entgeltfortzahlung (Krankengeld)", "lodas": "KG", "sbs": "0360" },
+    "kindkrank":             { "text": "Kind krank (Kinderkrankengeld)",  "lodas": "KK", "sbs": "0370" },
+    "kindkrank_bezahlt":     { "text": "Kind krank, bezahlt",             "lodas": "KB", "sbs": "0375" },
+    "unbezahlt":             { "text": "Unbezahlte Fehlzeit",             "lodas": "UF", "sbs": "0380" },
+    "mutterschutz":          { "text": "Mutterschutz",                    "lodas": "MU", "sbs": "0390" },
+    "beschaeftigungsverbot": { "text": "Beschäftigungsverbot",            "lodas": "BV", "sbs": "0391" },
+    "elternzeit":            { "text": "Elternzeit",                      "lodas": "EZ", "sbs": "0392" }
+  }
+}
