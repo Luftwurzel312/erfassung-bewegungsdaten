@@ -1640,6 +1640,13 @@ fieldset.feld .check small { font-weight: 400; }
   var kanzlei = "Ihr Lohnb\xFCro";
   var konfig = STANDARD;
   var ausgabeTab = "hinweise";
+  var imRahmen = (() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  })();
   var neueId = () => Math.random().toString(36).slice(2, 10);
   var esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   var $ = (sel) => document.querySelector(sel);
@@ -1964,7 +1971,7 @@ fieldset.feld .check small { font-weight: 400; }
     ${probleme.length ? befundListe(probleme.map((t) => ({ stufe: "fehler", text: t }))) : ""}
     <div class="segment" role="tablist">${tabs.map(([id, text]) => `<button type="button" role="tab" class="seg ${id === aktiv[0] ? "seg-an" : ""}" aria-selected="${id === aktiv[0]}" data-a="tab" data-tab="${id}">${text}</button>`).join("")}</div>
     <div class="code-kopf"><span class="leise">${aktiv[2] ? esc(aktiv[2].dateiname) : "Vollst\xE4ndige Meldung mit allen Antworten"}</span>
-      <span><button class="btn btn-klein" data-a="kopieren">Kopieren</button> ${aktiv[2] ? `<button class="btn btn-klein btn-zart" data-a="download" data-tab="${aktiv[0]}">Herunterladen</button>` : ""}</span></div>
+      <span><button class="btn btn-klein" data-a="kopieren">Kopieren</button> ${aktiv[2] && !imRahmen ? `<button class="btn btn-klein btn-zart" data-a="download" data-tab="${aktiv[0]}">Herunterladen</button>` : ""}</span></div>
     <div id="ausgabe">${inhalt}</div>`}
     <div class="aktionen"><button class="btn" data-a="gehe" data-ziel="pruefen">Zur\xFCck zur \xDCbersicht</button>
       <button class="btn btn-haupt" data-a="neuer-monat">N\xE4chsten Monat beginnen</button></div>

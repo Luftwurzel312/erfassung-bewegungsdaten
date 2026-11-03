@@ -39,6 +39,8 @@ let mitServer = false;
 let kanzlei = 'Ihr Lohnbüro';
 let konfig: Konfig = STANDARD;
 let ausgabeTab = 'hinweise';
+/** In eingebetteten Ansichten (z. B. veröffentlichte Demo) sind Downloads gesperrt. */
+const imRahmen = (() => { try { return window.self !== window.top; } catch { return true; } })();
 
 const neueId = () => Math.random().toString(36).slice(2, 10);
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -363,7 +365,7 @@ function seiteFertig(): string {
     ${probleme.length ? befundListe(probleme.map((t) => ({ stufe: 'fehler' as const, text: t }))) : ''}
     <div class="segment" role="tablist">${tabs.map(([id, text]) => `<button type="button" role="tab" class="seg ${id === aktiv[0] ? 'seg-an' : ''}" aria-selected="${id === aktiv[0]}" data-a="tab" data-tab="${id}">${text}</button>`).join('')}</div>
     <div class="code-kopf"><span class="leise">${aktiv[2] ? esc(aktiv[2].dateiname) : 'Vollständige Meldung mit allen Antworten'}</span>
-      <span><button class="btn btn-klein" data-a="kopieren">Kopieren</button> ${aktiv[2] ? `<button class="btn btn-klein btn-zart" data-a="download" data-tab="${aktiv[0]}">Herunterladen</button>` : ''}</span></div>
+      <span><button class="btn btn-klein" data-a="kopieren">Kopieren</button> ${aktiv[2] && !imRahmen ? `<button class="btn btn-klein btn-zart" data-a="download" data-tab="${aktiv[0]}">Herunterladen</button>` : ''}</span></div>
     <div id="ausgabe">${inhalt}</div>`}
     <div class="aktionen"><button class="btn" data-a="gehe" data-ziel="pruefen">Zurück zur Übersicht</button>
       <button class="btn btn-haupt" data-a="neuer-monat">Nächsten Monat beginnen</button></div>
