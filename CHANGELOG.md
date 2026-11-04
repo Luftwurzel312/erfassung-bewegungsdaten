@@ -1,5 +1,20 @@
 # Änderungen
 
+## Monatsmeldung 2.1.0 – 04.11.2026
+
+Oberfläche im Design des LOHNunion-Mandantenportals. Logik, Prüfungen und Exporte unverändert.
+
+**Gestaltung**
+- Farben aus dem Portal übernommen: Navy `#01425E` (Titel, Werte), Portal-Blau `#4AAEE7` (Knöpfe, aktiver Reiter, Kartentitel), Hintergrund `#F8FBFD`, Rahmen `#CBD5E1`, Trennlinien `#E7E7E7`.
+- Kopfzeile weiß mit Reiter-Navigation (aktiver Schritt blau unterstrichen) und „Abrechnungsmonat: MM.JJJJ“ rechts.
+- Heller Seitenkopf mit großem Titel und Kennzahlen (Mandantennummer, Abrechnungsmonat, Bundesland), Hauptaktion rechts.
+- Inhalte in weißen Karten mit hellblauem Abschnittstitel und feiner Linie (wie „Kundengruppe“ / „Allgemeine Angaben“). Schritt 1 in zwei Karten „Abrechnung“ und „Allgemeine Angaben“, Schritt 2 je Person drei Karten, Schritt 3 „Übersicht“ und „Absenden“.
+- Eingabefelder mit 4-px-Rundung und eigenem Auswahlpfeil, Bezeichnungen klein und grau, Werte navy.
+- Schrift: „DIN Next LT Pro“ bzw. „DIN 2014“, wenn installiert, sonst Barlow (Google Fonts, DIN-ähnlich).
+- Dunkelmodus auf die neue Palette abgestimmt.
+
+**Hinweis Barrierefreiheit**: Weiße Schrift auf `#4AAEE7` hat nur ca. 2,6 : 1 Kontrast (WCAG verlangt 4,5 : 1). Übernommen, weil es dem Portal entspricht; für Text auf Weiß wird ein dunkleres Blau (`#1F7FB8`) verwendet.
+
 ## Monatsmeldung 2.0.0 – 03.11.2026
 
 Quellstand neu aufgebaut (TypeScript, getrennt in Kalender, Parameter, Regeln, Export, Oberfläche) und um die Ergebnisse der Marktanalyse ergänzt.

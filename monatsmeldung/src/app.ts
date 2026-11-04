@@ -144,11 +144,38 @@ function kopfleiste(): string {
   const aktiv = ansicht === 'fertig' ? 3 : schritte.findIndex(([a]) => a === ansicht);
   return `<header class="kopfbar"><div class="kopf-innen">
     <div class="marke"><span class="marke-zeichen" aria-hidden="true">${ico('M4 4h16v16H4zM4 9h16M9 4v16')}</span>
-      <div><div class="marke-name">Monatsmeldung</div><div class="marke-sub">für ${esc(kanzlei)}${m.kopf.firma ? ` · ${esc(m.kopf.firma)}` : ''}</div></div></div>
+      <div><div class="marke-name">Monatsmeldung</div><div class="marke-sub">${esc(kanzlei)}${m.kopf.firma ? ` · ${esc(m.kopf.firma)}` : ''}</div></div></div>
     <nav class="stepper" aria-label="Fortschritt">${schritte.map(([ziel, text], i) => `<button class="st ${i === aktiv ? 'st-aktiv' : ''} ${i < aktiv ? 'st-fertig' : ''}" data-a="gehe" data-ziel="${ziel}" ${i > aktiv && !kopfFertig() ? 'disabled' : ''} ${i === aktiv ? 'aria-current="step"' : ''}>
-        <span class="st-nr">${i < aktiv ? '✓' : i + 1}</span><span class="st-text">${text}</span></button>`).join('<span class="st-linie"></span>')}</nav>
-    <div class="monat-pille" title="Abrechnungsmonat">${monatsName(m.kopf.monat)}</div>
+        <span class="st-nr">${i < aktiv ? '✓' : i + 1}</span><span class="st-text">${text}</span></button>`).join('')}</nav>
+    <div class="monat-pille" title="Abrechnungsmonat">Abrechnungsmonat: <strong>${monatKurz(m.kopf.monat)}</strong></div>
   </div></header>`;
+}
+
+/** „2026-11“ → „11.2026“ wie im Mandantenportal. */
+function monatKurz(monat: string): string {
+  const [j, mo] = monat.split('-');
+  return `${mo}.${j}`;
+}
+
+/** Heller Seitenkopf mit großem Titel (Portal-Stil). `meta` als Paare Bezeichnung/Wert. */
+function seitenkopf(titel: string, opt: { eyebrow?: string; lead?: string; meta?: [string, string][]; rechts?: string; breite?: string } = {}): string {
+  return `<section class="seitenkopf"><div class="seitenkopf-innen ${opt.breite ?? ''}">
+    <div class="seitenkopf-text">
+      ${opt.eyebrow ? `<p class="eyebrow">${opt.eyebrow}</p>` : ''}
+      <h1>${titel}</h1>
+      ${opt.lead ? `<p class="lead">${opt.lead}</p>` : ''}
+      ${opt.meta?.length ? `<dl class="meta">${opt.meta.map(([k, v]) => `<div><dt>${k}:</dt><dd>${v}</dd></div>`).join('')}</dl>` : ''}
+    </div>
+    ${opt.rechts ? `<div class="seitenkopf-rechts">${opt.rechts}</div>` : ''}
+  </div></section>`;
+}
+
+function kopfMeta(): [string, string][] {
+  return [
+    ...(m.kopf.mandantNr ? [['Mandantennummer', esc(m.kopf.mandantNr)] as [string, string]] : []),
+    ['Abrechnungsmonat', monatKurz(m.kopf.monat)],
+    ['Bundesland', esc(LAENDER[m.kopf.land])],
+  ];
 }
 
 // ---------------------------------------------------------------- Schritt 1
@@ -159,10 +186,13 @@ function seiteStart(): string {
   if (!monate.includes(m.kopf.monat)) monate.unshift(m.kopf.monat);
   const fehlt = [!m.kopf.firma.trim() && 'Firmenname', !m.kopf.mandantNr.trim() && 'Mandantennummer'].filter(Boolean);
   const regionen = (Object.keys(REGIONEN) as Region[]).filter((r) => REGIONEN[r].land === m.kopf.land);
-  return `<main class="seite seite-schmal"><section class="karte start">
-    <p class="eyebrow">Schritt 1 von 3</p>
-    <h1>Für welchen Monat melden Sie?</h1>
-    <p class="lead">Sie gehen gleich Person für Person durch und tippen an, was im Monat passiert ist. Wir fragen nur, was wir für die Lohnabrechnung brauchen, und prüfen Ihre Angaben sofort.</p>
+  return `<main>${seitenkopf('Für welchen Monat melden Sie?', {
+    eyebrow: 'Schritt 1 von 3', breite: 'seite-schmal',
+    lead: 'Sie gehen gleich Person für Person durch und tippen an, was im Monat passiert ist. Wir fragen nur, was wir für die Lohnabrechnung brauchen, und prüfen Ihre Angaben sofort.',
+  })}
+  <div class="seite seite-schmal stapel">
+  <section class="karte start">
+    <h2 class="kt">Abrechnung</h2>
     <div class="formgrid">
       <label class="feld"><span>Abrechnungsmonat</span>
         <select id="k-monat" data-k="monat">${monate.map((x) => `<option value="${x}" ${x === m.kopf.monat ? 'selected' : ''}>${monatsName(x)}</option>`).join('')}</select></label>
@@ -172,18 +202,23 @@ function seiteStart(): string {
       ${regionen.length ? `<fieldset class="feld feld-breit"><legend>Gibt es bei Ihnen zusätzliche örtliche Feiertage?</legend>
         ${regionen.map((r) => `<label class="check"><input type="checkbox" data-a="region" data-r="${r}" ${m.kopf.regionen.includes(r) ? 'checked' : ''}><span>${esc(REGIONEN[r].text)}<br><small class="leise">${esc(REGIONEN[r].hilfe)}</small></span></label>`).join('')}
       </fieldset>` : ''}
+    </div>
+    ${feiertagsZeile()}
+  </section>
+  <section class="karte">
+    <h2 class="kt">Allgemeine Angaben</h2>
+    <div class="formgrid">
       <label class="feld"><span>Firmenname</span><input id="k-firma" data-k="firma" value="${esc(m.kopf.firma)}" autocomplete="organization"></label>
       <label class="feld"><span>Ihre Mandantennummer</span><input id="k-mandant" data-k="mandantNr" value="${esc(m.kopf.mandantNr)}" inputmode="numeric"><small>Steht auf jeder Lohnabrechnung oben rechts.</small></label>
       <label class="feld feld-breit"><span>Ihr Name (für Rückfragen)</span><input id="k-ap" data-k="ansprechpartner" value="${esc(m.kopf.ansprechpartner)}" autocomplete="name" placeholder="optional"></label>
     </div>
-    ${feiertagsZeile()}
-    <div class="aktionen">
-      ${fehlt.length ? `<span class="leise">Noch nötig: ${fehlt.join(', ')}</span>` : ''}
-      <button class="btn btn-haupt" data-a="gehe" data-ziel="personen" ${fehlt.length ? 'disabled' : ''}>Weiter zu den Mitarbeitenden</button>
-    </div>
   </section>
+  <div class="aktionen">
+    ${fehlt.length ? `<span class="leise">Noch nötig: ${fehlt.join(', ')}</span>` : ''}
+    <button class="btn btn-haupt" data-a="gehe" data-ziel="personen" ${fehlt.length ? 'disabled' : ''}>Weiter zu den Mitarbeitenden</button>
+  </div>
   ${m.mitarbeiter.some((x) => x.beispiel) ? '<p class="beispiel-hinweis">Diese Demo startet mit Beispieldaten (erfundene Firma und Personen). <button class="link" data-a="leeren">Alles leeren und neu beginnen</button></p>' : ''}
-  </main>`;
+  </div></main>`;
 }
 
 function feiertagsZeile(): string {
@@ -199,24 +234,28 @@ function feiertagsZeile(): string {
 // ---------------------------------------------------------------- Schritt 2
 
 function seitePersonen(): string {
-  if (!m.mitarbeiter.length) return `<main class="seite seite-schmal"><section class="karte leer">
-    <h1>Noch keine Mitarbeitenden</h1><p class="lead">Legen Sie die Personen an, die Sie in diesem Monat bezahlen. Das geht schnell und muss nur einmal gemacht werden.</p>
-    <button class="btn btn-haupt" data-a="ma-neu">Person hinzufügen</button></section></main>`;
+  if (!m.mitarbeiter.length) return `<main>${seitenkopf('Noch keine Mitarbeitenden', { eyebrow: 'Schritt 2 von 3', breite: 'seite-schmal', meta: kopfMeta() })}
+    <div class="seite seite-schmal"><section class="karte leer">
+    <h2 class="kt">Mitarbeitende anlegen</h2><p class="lead">Legen Sie die Personen an, die Sie in diesem Monat bezahlen. Das geht schnell und muss nur einmal gemacht werden.</p>
+    <div class="aktionen"><button class="btn btn-haupt" data-a="ma-neu">Person hinzufügen</button></div></section></div></main>`;
   if (!person(aktivMa)) aktivMa = m.mitarbeiter[0].id;
   const fertig = m.mitarbeiter.filter((x) => ['ok', 'warnung'].includes(status(x, m))).length;
-  return `<main class="seite personen">
+  return `<main>${seitenkopf(`Mitarbeitende im ${monatsName(m.kopf.monat)}`, {
+    eyebrow: 'Schritt 2 von 3', meta: kopfMeta(),
+    rechts: '<button class="btn btn-haupt" data-a="gehe" data-ziel="pruefen">Alles prüfen und senden</button>',
+  })}
+  <div class="seite personen">
     <aside class="liste" aria-label="Mitarbeitende">
-      <div class="liste-kopf"><h2>Mitarbeitende</h2><span class="zaehler">${fertig} von ${m.mitarbeiter.length} fertig</span></div>
+      <div class="liste-kopf"><h2 class="kt">Mitarbeitende</h2><span class="zaehler">${fertig} von ${m.mitarbeiter.length} fertig</span></div>
       <div class="fortschritt"><span style="width:${(fertig / m.mitarbeiter.length) * 100}%"></span></div>
       <ul>${m.mitarbeiter.map((x) => { const s = status(x, m); return `<li><button class="person ${x.id === aktivMa ? 'person-aktiv' : ''}" data-a="ma-waehle" data-id="${x.id}" ${x.id === aktivMa ? 'aria-current="true"' : ''}>
         <span class="punkt punkt-${s}" aria-hidden="true"></span>
         <span class="person-text"><span class="person-name">${esc(x.name)}</span><span class="person-sub">Nr. ${esc(x.persNr)} · ${BESCHAEFTIGUNG[x.beschaeftigung]}</span></span>
         <span class="sr">${STATUS_TEXT[s]}</span></button></li>`; }).join('')}</ul>
-      <button class="btn btn-zart voll" data-a="ma-neu">+ Person hinzufügen</button>
-      <button class="btn btn-haupt voll" data-a="gehe" data-ziel="pruefen">Alles prüfen und senden</button>
+      <button class="btn voll" data-a="ma-neu">+ Person hinzufügen</button>
     </aside>
-    <section class="detail">${detail(person(aktivMa)!)}</section>
-  </main>`;
+    <div class="detail">${detail(person(aktivMa)!)}</div>
+  </div></main>`;
 }
 
 const KUERZEL: Partial<Record<Typ, string>> = { urlaub: 'U', krank: 'K', kindkrank: 'KK', unbezahlt: 'UF', mutterschutz: 'M' };
@@ -250,13 +289,16 @@ function detail(ma: Mitarbeiter): string {
   const fv = ma.lohnform === 'stundenlohn' ? feiertagsverguetung(k) : null;
   const fehltStunden = ma.lohnform === 'stundenlohn' && !eigene.some((e) => e.typ === 'arbeitszeit');
   const kats = KATEGORIEN.filter((x) => !x.nurStundenlohn || ma.lohnform === 'stundenlohn');
-  return `<div class="detail-kopf">
-      <div><h1>${esc(ma.name)}</h1><p class="sub">Pers.-Nr. ${esc(ma.persNr)} · ${esc(maZeile(ma))}</p></div>
-      <div class="detail-kopf-r">${chip(status(ma, m))}<button class="btn btn-klein" data-a="ma-bearbeiten" data-id="${ma.id}">Stammdaten</button></div>
+  return `<section class="karte">
+    <div class="detail-kopf">
+      <div><h2 class="person-titel">${esc(ma.name)}</h2>
+        <dl class="meta"><div><dt>Personalnummer:</dt><dd>${esc(ma.persNr)}</dd></div><div><dt>Beschäftigung:</dt><dd>${esc(maZeile(ma))}</dd></div></dl></div>
+      <div class="detail-kopf-r">${chip(status(ma, m))}<button class="btn btn-haupt" data-a="ma-bearbeiten" data-id="${ma.id}">Stammdaten bearbeiten</button></div>
     </div>
     ${monatsleiste(ma)}
-    <div class="frage-block">
-      <h2>Was war im ${mn} bei ${esc(vorname)}?</h2>
+    </section>
+    <section class="karte frage-block">
+      <h2 class="kt">Was war im ${mn} bei ${esc(vorname)}?</h2>
       <p class="leise">Tippen Sie an, was zutrifft. Sie können mehrere Dinge nacheinander eintragen.${ma.lohnform === 'gehalt' ? ' Das Gehalt läuft automatisch – melden Sie nur, was davon abweicht.' : ''}</p>
       ${GRUPPEN.map(([g, titel]) => `<div class="gruppe"><h3>${titel}</h3><div class="kacheln">${kats.filter((x) => x.gruppe === g).map((x) => {
         const anzahl = eigene.filter((e) => e.typ === x.typ).length;
@@ -266,9 +308,9 @@ function detail(ma: Mitarbeiter): string {
           <span class="kachel-titel">${esc(x.titel)}${anzahl ? `<span class="kachel-zahl">${anzahl}</span>` : ''}</span>
           <span class="kachel-text">${esc(x.kurz)}</span>${pflicht ? '<span class="kachel-marke">Bitte eintragen</span>' : ''}</button>`;
       }).join('')}</div></div>`).join('')}
-    </div>
-    <div class="eintraege">
-      <h2>Eingetragen für ${mn}</h2>
+    </section>
+    <section class="karte eintraege">
+      <h2 class="kt">Eingetragen für ${mn}</h2>
       ${eigene.length ? `<ul class="eintrag-liste">${eigene.map((e) => {
         const eb = pruefeEintrag(e, k, m);
         const s = eb.some((x) => x.stufe === 'fehler') ? 'fehler' : eb.some((x) => x.stufe === 'warnung') ? 'warnung' : 'ok';
@@ -282,14 +324,14 @@ function detail(ma: Mitarbeiter): string {
       }).join('')}</ul>` : '<p class="leer-text">Noch nichts eingetragen.</p>'}
       ${fv && fv.tage.length ? `<p class="auto">Automatisch berücksichtigt: ${fv.tage.length} Feiertag(e) mit ${std(fv.stunden)} (${fv.tage.map((d) => fmt(d, false)).join(', ')}). Feiertage werden bezahlt, auch ohne Arbeit.</p>` : ''}
       ${ma.beschaeftigung === 'minijob' ? `<p class="auto">Geschätzter Verdienst im Monat: <strong>${euro(verdienst(m, ma))}</strong> (Grenze ${euro(jahreswerte(m.kopf.monat).werte.minijobGrenze)}).</p>` : ''}
-    </div>
-    ${bf.length ? `<div class="pruef-block"><h2>Prüfung</h2>${befundListe(bf)}</div>` : ''}
+    ${bf.length ? `<div class="pruef-block"><h3 class="kt-klein">Prüfung</h3>${befundListe(bf)}</div>` : ''}
     <div class="detail-fuss">
       ${eigene.length ? '<span></span>' : `<label class="check"><input type="checkbox" id="erl-${ma.id}" data-a="erledigt" data-id="${ma.id}" ${m.erledigt[ma.id] ? 'checked' : ''}>
         <span>Bei ${esc(vorname)} gab es nichts Besonderes. ${ma.lohnform === 'gehalt' ? 'Gehalt wie immer.' : ''}</span></label>`}
       ${naechste ? `<button class="btn btn-haupt" data-a="ma-waehle" data-id="${naechste.id}">Weiter zu ${esc(naechste.name.split(' ')[0])}</button>`
         : '<button class="btn btn-haupt" data-a="gehe" data-ziel="pruefen">Alles prüfen und senden</button>'}
-    </div>`;
+    </div>
+    </section>`;
 }
 
 // ---------------------------------------------------------------- Schritt 3
@@ -300,11 +342,15 @@ function seitePruefen(): string {
   const offen = liste.filter((x) => x.s === 'fehler' || x.s === 'offen');
   const warnungen = liste.some((x) => x.bf.some((b) => b.stufe === 'warnung'));
   const senden = !offen.length && m.mitarbeiter.length > 0 && (!warnungen || m.hinweiseGelesen);
-  return `<main class="seite seite-mittel"><section class="karte">
-    <p class="eyebrow">Schritt 3 von 3</p>
-    <h1>Alles prüfen und an ${esc(kanzlei)} senden</h1>
-    <p class="lead">${offen.length ? `Bei ${offen.length} ${offen.length === 1 ? 'Person fehlt' : 'Personen fehlt'} noch etwas. Tippen Sie auf den Namen, um es zu ergänzen.` : 'Alle Personen sind bearbeitet. Bitte lesen Sie die Hinweise und senden Sie dann ab.'}</p>
-    ${befundListe(meldungsBefunde(m))}
+  const mb = meldungsBefunde(m);
+  return `<main>${seitenkopf(`Alles prüfen und an ${esc(kanzlei)} senden`, {
+    eyebrow: 'Schritt 3 von 3', breite: 'seite-mittel', meta: kopfMeta(),
+    lead: offen.length ? `Bei ${offen.length} ${offen.length === 1 ? 'Person fehlt' : 'Personen fehlt'} noch etwas. Tippen Sie auf den Namen, um es zu ergänzen.` : 'Alle Personen sind bearbeitet. Bitte lesen Sie die Hinweise und senden Sie dann ab.',
+  })}
+  <div class="seite seite-mittel stapel">
+  ${mb.length ? `<section class="karte"><h2 class="kt">Hinweise zur Meldung</h2>${befundListe(mb)}</section>` : ''}
+  <section class="karte">
+    <h2 class="kt">Übersicht</h2>
     <div class="tabelle-wrap"><table class="uebersicht">
       <thead><tr><th>Person</th><th>Gemeldet</th><th>Status</th></tr></thead>
       <tbody>${liste.map(({ ma, s, bf }) => {
@@ -313,16 +359,19 @@ function seitePruefen(): string {
           <td>${eigene.length ? `<ul class="mini">${eigene.map((e) => `<li><strong>${esc(kat(e.typ).titel)}:</strong> ${esc(eintragKurz(e, ma))}</li>`).join('')}</ul>` : m.erledigt[ma.id] ? 'Keine Änderungen' : '<span class="leise">–</span>'}
           ${bf.length ? befundListe(bf) : ''}</td><td>${chip(s)}</td></tr>`;
       }).join('')}</tbody></table></div>
+    <details class="vorschau"><summary>So kommt die Meldung bei uns an (${zeilen.length} Zeilen)</summary>
+      <div class="tabelle-wrap">${zeilenTabelle(zeilen)}</div></details>
+  </section>
+  <section class="karte">
+    <h2 class="kt">Absenden</h2>
     <label class="feld feld-breit"><span>Nachricht an uns (optional)</span>
       <textarea id="nachricht" data-k="nachricht" rows="3" placeholder="z. B. Herr Hansen bekommt ab nächstem Monat mehr Gehalt.">${esc(m.nachricht)}</textarea></label>
     ${warnungen ? `<label class="check"><input type="checkbox" id="gelesen" data-a="gelesen" ${m.hinweiseGelesen ? 'checked' : ''}><span>Ich habe die Hinweise gelesen. Offene Punkte klären wir bei Bedarf mit Ihnen.</span></label>` : ''}
-    <details class="vorschau"><summary>So kommt die Meldung bei uns an (${zeilen.length} Zeilen)</summary>
-      <div class="tabelle-wrap">${zeilenTabelle(zeilen)}</div></details>
     <div class="aktionen">
       <button class="btn" data-a="gehe" data-ziel="personen">Zurück</button>
       <button class="btn btn-haupt" data-a="senden" ${senden ? '' : 'disabled'}>Meldung für ${monatsName(m.kopf.monat)} senden</button>
     </div>
-  </section></main>`;
+  </section></div></main>`;
 }
 
 function zeilenTabelle(zeilen: Zeile[]): string {
@@ -353,13 +402,15 @@ function seiteFertig(): string {
   const inhalt = aktiv[0] === 'hinweise' ? aufgabenHtml(p.liste)
     : aktiv[0] === 'json' ? `<pre class="code">${esc(JSON.stringify(m, null, 2))}</pre>`
       : `<pre class="code">${esc(aktiv[2]!.text)}</pre>`;
-  return `<main class="seite seite-mittel"><section class="karte fertig">
-    <div class="haken" aria-hidden="true">${ico('M5 12.5 10 17 19 7')}</div>
-    <h1>${e.ok ? 'Danke, Ihre Meldung ist da.' : 'Demo: Meldung erstellt'}</h1>
-    <p class="lead">${esc(e.text)}</p>
+  return `<main>${seitenkopf(e.ok ? 'Danke, Ihre Meldung ist da.' : 'Demo: Meldung erstellt', {
+    breite: 'seite-mittel', lead: esc(e.text), meta: kopfMeta(),
+    rechts: '<div class="haken" aria-hidden="true">' + ico('M5 12.5 10 17 19 7') + '</div>',
+  })}
+  <div class="seite seite-mittel stapel">
+  <section class="karte fertig">
     ${e.ablage?.length ? `<p class="leise">Gespeichert: ${e.ablage.map((d) => `<code>${esc(d)}</code>`).join(', ')}</p>` : ''}
     ${mitServer ? '' : `
-    <h2>Für das Lohnbüro</h2>
+    <h2 class="kt">Für das Lohnbüro</h2>
     <p class="leise">Diese Ansicht sieht der Mandant im Echtbetrieb nicht. Die Dateien werden in Windows-1252 mit CRLF gespeichert, wie LODAS und SBS sie erwarten.</p>
     ${!konfig.geprueft ? befundListe([{ stufe: 'warnung', text: 'Lohnarten-Zuordnung ist ein Beispiel (konfig/lohnarten.standard.json, "geprueft": false). Vor dem ersten echten Import abstimmen und mit einem Testmandanten importieren.' }]) : ''}
     ${probleme.length ? befundListe(probleme.map((t) => ({ stufe: 'fehler' as const, text: t }))) : ''}
@@ -369,7 +420,7 @@ function seiteFertig(): string {
     <div id="ausgabe">${inhalt}</div>`}
     <div class="aktionen"><button class="btn" data-a="gehe" data-ziel="pruefen">Zurück zur Übersicht</button>
       <button class="btn btn-haupt" data-a="neuer-monat">Nächsten Monat beginnen</button></div>
-  </section></main>`;
+  </section></div></main>`;
 }
 
 function aufgabenHtml(liste: Aufgabe[]): string {
